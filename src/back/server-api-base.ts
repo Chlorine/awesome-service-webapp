@@ -40,6 +40,8 @@ export class ServerAPIBase {
       body: 'POST' === method ? JSON.stringify(body) : null,
     };
 
+    fetchOpts.credentials = 'include';
+
     let response: Response;
 
     try {
