@@ -1,0 +1,41 @@
+@charset "utf-8";
+
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+// @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap');
+
+$family-sans-serif: 'Nunito', sans-serif;
+$roboto-condensed: 'Roboto Condensed';
+
+.text-condensed {
+  font-family: $roboto-condensed;
+}
+
+$navbar-breakpoint: 769px;
+$menu-item-active-background-color: rgba(24, 121, 107, 0.67);
+
+@import '~bulma/bulma.sass';
+
+$loader-color: $grey-lightest;
+@import "scss/loaders";
+
+.fast-spin {
+  -webkit-animation: fa-spin 0.5s infinite linear;
+  animation: fa-spin 0.5s infinite linear;
+}
+
+// для sticky footer
+
+#root {
+  display: flex;
+  min-height: calc(100vh - #{$navbar-height});
+  flex-direction: column;
+}
+#wrapper {
+  flex: 1 0 auto;
+}
+
+// dtp
+
+.react-datepicker {
+  font-family: $family-sans-serif;
+}
