@@ -19,13 +19,15 @@ import ServiceLink from './components/ServiceLinks/ServiceLink';
 import ConfirmEmail from './components/ServiceLinks/ConfirmEmail';
 import ResetPassword from './components/ServiceLinks/ResetPassword';
 
+import Profile from './components/UserProfile/Profile';
+import EventsRoot from './components/PublicEvents/EventsRoot';
+import Event from './components/PublicEvents/Event/Event';
+import Survey from './components/PublicEvents/Survey/Survey';
+
 import Page1 from './components/Page1';
 import Page2 from './components/Page2';
 import Page3 from './components/Page3';
 import Page4 from './components/Page4';
-import Profile from './components/UserProfile/Profile';
-import EventsRoot from './components/PublicEvents/EventsRoot';
-import Event from './components/PublicEvents/Event';
 
 const store = configureStore();
 
@@ -58,6 +60,10 @@ function App() {
 
             <PrivateRoute path="/public-events" component={EventsRoot} />
             <PrivateRoute path="/public-event/:eventId" component={Event} />
+            <PrivateRoute
+              path="/public-event-survey/:surveyId"
+              component={Survey}
+            />
 
             <Route path="/service-link/:linkType" component={ServiceLink} />
             <Route path="/confirm-email/:token" component={ConfirmEmail} />

@@ -4,12 +4,13 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Formik, FormikHelpers, FormikProps } from 'formik';
 import * as yup from 'yup';
-import classNames from 'classnames';
 
 import { AppState } from '../store/state';
 import api from './../back/server-api';
 
 import { PositiveResults } from './Common/PositiveResults';
+import { SubmitButton, TextInputField } from './Common/Forms';
+import { Alert } from './Common/Alert';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -74,15 +75,9 @@ class ForgottenPassword extends React.Component<Props, State> {
       });
   };
 
-  renderForm = ({
-    handleSubmit,
-    handleBlur,
-    handleChange,
-    values,
-    touched,
-    errors,
-    isSubmitting,
-  }: FormikProps<FormValues>) => {
+  renderForm = (fp: FormikProps<FormValues>) => {
+    const { handleSubmit, isSubmitting } = fp;
+
     const { errorMsg } = this.state;
 
     return (
@@ -90,49 +85,31 @@ class ForgottenPassword extends React.Component<Props, State> {
         <div className="field">
           <p>Введите email, указанный вами при регистрации:</p>
         </div>
-        <div className="field">
-          <div className="control has-icons-left">
-            <input
-              type="email"
-              name="email"
-              placeholder="abc@example.com"
-              className="input"
-              maxLength={321}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.email}
-              disabled={isSubmitting}
-            />
-            <span className="icon is-small is-left">
-              <i className="fa fa-envelope" />
-            </span>
-          </div>
-          {touched.email && errors.email && (
-            <p className="help is-danger">{errors.email}</p>
-          )}
-        </div>
-        {/* -- Ошибка входа ------------------*/}
+        <TextInputField
+          type={'email'}
+          label=""
+          placeholder={'abc@example.com'}
+          fp={fp}
+          name={'email'}
+          maxLength={321}
+          leftIcon={'fa-envelope'}
+        />
+        {/* -- Ошибка сабмита ------------------*/}
         {errorMsg && (
           <div className="field">
-            <div className="notification is-danger is-light">
-              <button
-                className="delete"
-                onClick={() => this.setState({ errorMsg: '' })}
-              />
+            <Alert
+              type={'danger'}
+              onClose={() => this.setState({ errorMsg: '' })}
+            >
               {errorMsg}
-            </div>
+            </Alert>
           </div>
         )}
         <div className="field">
-          <button
-            type="submit"
-            className={classNames('button is-primary', {
-              'is-loading': isSubmitting,
-            })}
-            disabled={isSubmitting}
-          >
-            Сбросить текущий пароль
-          </button>
+          <SubmitButton
+            text="Сбросить текущий пароль"
+            isSubmitting={isSubmitting}
+          />
         </div>
       </form>
     );
@@ -150,7 +127,7 @@ class ForgottenPassword extends React.Component<Props, State> {
         <div className="hero-body">
           <div className="container">
             <div className="columns is-centered">
-              <div className="column is-5-tablet is-4-desktop">
+              <div className="column is-6-tablet is-5-desktop">
                 {/* -- Титле ----------------------------*/}
                 {!email && (
                   <h3 className="title has-text-grey">Сброс пароля</h3>

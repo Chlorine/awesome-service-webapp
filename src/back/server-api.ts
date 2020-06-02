@@ -1,5 +1,5 @@
 import { GenericObject } from './common';
-import { ServerAPIBase } from './server-api-base';
+import { IS_PRODUCTION, ServerAPIBase } from './server-api-base';
 
 import * as CoreApi from './common/api';
 import * as PublicEventsApi from './common/public-events/api';
@@ -37,12 +37,12 @@ export class ServerAPI extends ServerAPIBase {
     const { __delay, __genErr } = params;
 
     // отладочная тормозяшка
-    if (__delay) {
+    if (__delay && !IS_PRODUCTION) {
       await new Promise(resolve => setTimeout(resolve, __delay));
     }
 
     // отладочная сбойняшка
-    if (__genErr) {
+    if (__genErr && !IS_PRODUCTION) {
       console.log(`API: raising debug error...`);
       throw new Error(
         typeof __genErr === 'string' ? __genErr : 'Ошибка в отладочных целях',

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { SimpleSpinner } from '../Common/SimpleSpinner';
+import { SimpleSpinner } from '../../Common/SimpleSpinner';
 
 declare type Props = {};
 
@@ -9,14 +9,14 @@ declare type State = {
   errorMsg: string;
 };
 
-export default class SurveyCreate extends React.Component<Props, State> {
+export default class SurveyAnswers extends React.Component<Props, State> {
   state: State = {
     isFetching: false,
     errorMsg: '',
   };
 
   componentDidMount(): void {
-    document.title = 'Новая анкета';
+    document.title = 'Ответы на вопросы анкеты';
   }
 
   render() {
@@ -43,13 +43,15 @@ export default class SurveyCreate extends React.Component<Props, State> {
         {!isFetching && !errorMsg && (
           <div className="columns">
             <div className="column is-12">
-              <div className="box">
-                <h3 className="title is-5 has-text-grey-light">Новая анкета</h3>
+              <div className="box--">
+                <h3 className="title is-5 has-text-grey-light">
+                  Ответы на вопросы анкеты
+                </h3>
                 <h4 className="subtitle is-6 has-text-grey-lighter">
-                  Coming soon{' '}
+                  В разработке{' '}
                   <span className="icon">
-                    <i className="fa fa-smile-o" />
-                  </span>{' '}
+                    <i className="fa fa-meh-o" />
+                  </span>
                 </h4>
               </div>
             </div>

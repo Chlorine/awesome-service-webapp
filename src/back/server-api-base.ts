@@ -7,11 +7,12 @@ export const DEV_API_HOSTNAME = window.location.hostname;
 
 // `https://api.${window.location.hostname}/api`
 
+export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
 export class ServerAPIBase {
-  static URL =
-    process.env.NODE_ENV === 'production'
-      ? `https://api.cloudtickets.io/api`
-      : `http://${DEV_API_HOSTNAME}:${DEV_API_PORT}/api`;
+  static URL = IS_PRODUCTION
+    ? `https://api.cloudtickets.io/api`
+    : `http://${DEV_API_HOSTNAME}:${DEV_API_PORT}/api`;
 
   async executeRequest(
     body: GenericObject,
@@ -40,13 +41,14 @@ export class ServerAPIBase {
       body: 'POST' === method ? JSON.stringify(body) : null,
     };
 
+    // TODO: когда-нибудь нормально понять за CORS
     fetchOpts.credentials = 'include';
 
     let response: Response;
 
     try {
       response = await fetch(ServerAPIBase.URL + path, fetchOpts);
-    } catch(err) {
+    } catch (err) {
       console.error(`API: ${target}|${action} ERROR: ${err.message}`);
       throw new Error('Нет ответа от сервера');
     }
@@ -75,13 +77,13 @@ export class ServerAPIBase {
       throw new Error(json.errorMsg || 'Неизвестная ошибка');
     }
 
-
-    console.log(`API: ${target}|${action} ${status} ${statusText} (${et})`, json);
+    console.log(
+      `API: ${target}|${action} ${status} ${statusText} (${et})`,
+      json,
+    );
 
     return json;
   }
 
   // private static async processResponse
 }
-
-

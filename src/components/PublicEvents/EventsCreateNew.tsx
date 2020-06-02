@@ -1,7 +1,7 @@
 import React from 'react';
 import * as yup from 'yup';
 import { Formik, FormikProps, FormikHelpers } from 'formik';
-import classNames from 'classnames';
+
 import { add, isBefore, parseISO, startOfDay } from 'date-fns';
 import { isObject } from 'lodash';
 import DatePicker from 'react-datepicker';
@@ -9,10 +9,23 @@ import DatePicker from 'react-datepicker';
 import api from '../../back/server-api';
 
 import { UnmountHelper } from '../../utils/unmount-helper';
-import { SimpleSpinner } from '../Common/SimpleSpinner';
 import { SurveyInfo } from '../../back/common/public-events/survey';
 import { history } from '../../store';
+
 import { FormikPersist } from '../Common/FormikPersist';
+
+import {
+  FieldValidationStatus,
+  TextInputField,
+  SubmitButton,
+} from '../Common/Forms';
+import { Alert } from '../Common/Alert';
+
+import {
+  VEFetchError,
+  VEFetchingSpinner,
+  VEPageSecondaryTitle,
+} from '../Common/ViewElements';
 
 declare type Props = {};
 
@@ -25,15 +38,15 @@ declare type State = {
 
 declare type FormValues = {
   name: string;
-  description?: string;
+  description: string;
   placeName: string;
-  placeAddress: string;
+  placeAddress?: string;
   start: Date;
   end: Date;
   surveyId?: string;
 };
 
-export default class EventCreate extends React.Component<Props, State> {
+export default class EventsCreateNew extends React.Component<Props, State> {
   uh = new UnmountHelper();
 
   state: State = {
@@ -51,6 +64,7 @@ export default class EventCreate extends React.Component<Props, State> {
       .trim(),
     description: yup
       .string()
+      .required()
       .max(512)
       .trim(),
     placeName: yup
@@ -60,7 +74,6 @@ export default class EventCreate extends React.Component<Props, State> {
       .trim(),
     placeAddress: yup
       .string()
-      .required()
       .max(512)
       .trim(),
     start: yup
@@ -82,24 +95,23 @@ export default class EventCreate extends React.Component<Props, State> {
   });
 
   componentDidMount(): void {
-    document.title = 'Новое мероприятие';
     this.uh.onMount();
+
+    document.title = 'Новое мероприятие';
 
     this.setState({ isFetching: true, fetchErrorMsg: '' });
 
     this.uh
-      .wrap(api.events.exec('getSurveys', { __delay: 1, __genErr: false }))
-      .then(({ stillMounted, err, results }) => {
-        if (stillMounted) {
-          if (err) {
-            this.setState({ fetchErrorMsg: err.message });
-          } else {
-            const { surveys } = results;
-            this.setState({ surveys });
-          }
-
-          this.setState({ isFetching: false });
+      .wrap(api.events.exec('getSurveys', { __delay: 0, __genErr: false }))
+      .then(({ err, results }) => {
+        if (err) {
+          this.setState({ fetchErrorMsg: err.message });
+        } else {
+          const { surveys } = results;
+          this.setState({ surveys });
         }
+
+        this.setState({ isFetching: false });
       });
   }
 
@@ -130,144 +142,89 @@ export default class EventCreate extends React.Component<Props, State> {
       .wrap(
         api.events.exec('createEvent', {
           name,
-          description: description || '',
+          description: description,
           place: {
             name: placeName,
-            address: placeAddress,
+            address: placeAddress || '',
             location: undefined, // TODO: +map
           },
           start: start.toISOString(),
           end: end.toISOString(),
           surveyId: surveyId || undefined,
           // dbg:
-          __delay: 500,
+          __delay: 100,
           __genErr: false,
         }),
       )
-      .then(({ stillMounted, err, results }) => {
-        if (stillMounted) {
-          setSubmitting(false);
+      .then(({ err, results }) => {
+        setSubmitting(false);
 
-          if (err) {
-            this.setState({ submitErrorMsg: err.message });
-          } else {
-            const { event } = results;
+        if (err) {
+          this.setState({ submitErrorMsg: err.message });
+        } else {
+          const { event } = results;
 
-            resetForm({});
-            history.push(`/public-event/${event.id}`);
-          }
+          resetForm({});
+          history.push(`/public-event/${event.id}`);
         }
       });
   };
 
-  renderForm = ({
-    handleSubmit,
-    handleBlur,
-    handleChange,
-    values,
-    touched,
-    errors,
-    isSubmitting,
-    setFieldValue,
-  }: FormikProps<FormValues>) => {
+  renderForm = (fp: FormikProps<FormValues>) => {
+    const {
+      handleSubmit,
+      handleBlur,
+      handleChange,
+      values,
+      isSubmitting,
+      setFieldValue,
+    } = fp;
     const { submitErrorMsg, surveys } = this.state;
 
     return (
       <form noValidate onSubmit={handleSubmit}>
         {/* --- Название ----------------------------------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Название
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="name"
-              placeholder="Мероприятие"
-              className="input"
-              maxLength={256}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.name}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.name && errors.name && (
-            <p className="help is-danger">{errors.name}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Название"
+          placeholder="Название мероприятия"
+          fp={fp}
+          name="name"
+          maxLength={256}
+        />
 
         {/* --- Описание ----------------------------------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Описание
-          </label>
-          <div className="control">
-            <textarea
-              name="description"
-              placeholder="Краткое описание мероприятия"
-              className="textarea"
-              maxLength={513}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.description}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.description && errors.description && (
-            <p className="help is-danger">{errors.description}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Описание"
+          placeholder="Краткое описание мероприятия"
+          fp={fp}
+          name="description"
+          maxLength={513}
+          isTextarea={true}
+        />
 
         {/* --- Название места проведения --------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Место проведения
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="placeName"
-              placeholder="Место проведения"
-              className="input"
-              maxLength={256}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.placeName}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.placeName && errors.placeName && (
-            <p className="help is-danger">{errors.placeName}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Место проведения"
+          placeholder="Название места проведения"
+          fp={fp}
+          name="placeName"
+          maxLength={256}
+        />
 
         {/* --- Адрес места проведения --------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Адрес места проведения
-          </label>
-          <div className="control">
-            <textarea
-              name="placeAddress"
-              placeholder="Место проведения"
-              className="textarea"
-              maxLength={513}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.placeAddress}
-              disabled={isSubmitting}
-              rows={3}
-            />
-          </div>
-          {touched.placeAddress && errors.placeAddress && (
-            <p className="help is-danger">{errors.placeAddress}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Адрес места проведения"
+          placeholder="Адрес места проведения"
+          fp={fp}
+          name="placeAddress"
+          maxLength={513}
+          isTextarea={true}
+          rows={3}
+        />
 
         {/* --- Даты начала и окончания ------------- */}
 
@@ -292,11 +249,10 @@ export default class EventCreate extends React.Component<Props, State> {
                     onBlur={handleBlur}
                     dateFormat={'dd.MM.yyyy'}
                     todayButton={'Сегодня'}
+                    disabled={isSubmitting}
                   />
                 </div>
-                {touched.start && errors.start && (
-                  <p className="help is-danger">{errors.start}</p>
-                )}
+                <FieldValidationStatus fp={fp} name="start" />
               </div>
             </div>
             <div className="column is-6">
@@ -318,11 +274,10 @@ export default class EventCreate extends React.Component<Props, State> {
                     onBlur={handleBlur}
                     dateFormat={'dd.MM.yyyy'}
                     todayButton={'Сегодня'}
+                    disabled={isSubmitting}
                   />
                 </div>
-                {touched.end && errors.end && (
-                  <p className="help is-danger">{errors.end}</p>
-                )}
+                <FieldValidationStatus fp={fp} name="end" />
               </div>
             </div>
           </div>
@@ -341,6 +296,7 @@ export default class EventCreate extends React.Component<Props, State> {
                 value={values.surveyId}
                 onChange={handleChange}
                 onBlur={handleBlur}
+                disabled={isSubmitting}
               >
                 <option value="">Без анкеты</option>
                 {surveys.map(s => (
@@ -360,28 +316,22 @@ export default class EventCreate extends React.Component<Props, State> {
 
         {submitErrorMsg && (
           <div className="field">
-            <div className="notification is-danger is-light">
-              <button
-                className="delete"
-                onClick={() => this.setState({ submitErrorMsg: '' })}
-              />
+            <Alert
+              type={'danger'}
+              onClose={() => this.setState({ submitErrorMsg: '' })}
+            >
               {submitErrorMsg}
-            </div>
+            </Alert>
           </div>
         )}
 
         {/* --- Сабмит ----------------------------------------*/}
 
         <div className="field">
-          <button
-            type="submit"
-            className={classNames('button is-primary', {
-              'is-loading': isSubmitting,
-            })}
-            disabled={isSubmitting}
-          >
-            Создать мероприятие
-          </button>
+          <SubmitButton
+            text="Создать мероприятие"
+            isSubmitting={isSubmitting}
+          />
         </div>
         <FormikPersist
           formName={this.formName}
@@ -444,17 +394,11 @@ export default class EventCreate extends React.Component<Props, State> {
         <div className="columns">
           <div className="column is-10-tablet is-9-desktop is-8-widescreen is-6-fullhd">
             <div className="box">
-              {isFetching && <SimpleSpinner text="Загрузка..." />}
-              {fetchErrorMsg && (
-                <div className="notification is-danger is-light">
-                  Не удалось загрузить данные: {fetchErrorMsg}
-                </div>
-              )}
+              <VEFetchingSpinner isFetching={isFetching} />
+              <VEFetchError msg={fetchErrorMsg} />
               {!isFetching && !fetchErrorMsg && (
                 <>
-                  <h3 className="title is-5 has-text-grey">
-                    Новое мероприятие
-                  </h3>
+                  <VEPageSecondaryTitle title="Новое мероприятие" />
                   <Formik
                     initialValues={this.formInitialValues}
                     validationSchema={this.schema}

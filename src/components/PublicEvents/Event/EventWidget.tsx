@@ -1,12 +1,11 @@
 import React from 'react';
-
-import { SimpleSpinner } from '../Common/SimpleSpinner';
-
-import api from '../../back/server-api';
-import { AppState } from '../../store/state';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import CopyToClipboard from 'react-copy-to-clipboard';
+
+import { SimpleSpinner } from '../../Common/SimpleSpinner';
+import api from '../../../back/server-api';
+import { AppState } from '../../../store/state';
 
 const mapStateToProps = (state: AppState) => {
   return {

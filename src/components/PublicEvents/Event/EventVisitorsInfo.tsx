@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { SimpleSpinner } from '../Common/SimpleSpinner';
+import { SimpleSpinner } from '../../Common/SimpleSpinner';
 
 declare type Props = {};
 
@@ -43,14 +43,14 @@ export default class EventVisitorsInfo extends React.Component<Props, State> {
         {!isFetching && !errorMsg && (
           <div className="columns">
             <div className="column is-12">
-              <div className="box">
+              <div className="box---">
                 <h3 className="title is-5 has-text-grey-light">
-                  Сводка по посетителям
+                  Посетители мероприятия
                 </h3>
                 <h4 className="subtitle is-6 has-text-grey-lighter">
-                  Coming soon{' '}
+                  В разработке{' '}
                   <span className="icon">
-                    <i className="fa fa-smile-o" />
+                    <i className="fa fa-meh-o" />
                   </span>
                 </h4>
               </div>

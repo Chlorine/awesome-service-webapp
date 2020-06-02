@@ -3,7 +3,6 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { Formik, FormikHelpers, FormikProps } from 'formik';
 import * as yup from 'yup';
-import classNames from 'classnames';
 import { Link, RouteComponentProps } from 'react-router-dom';
 
 import { AppState } from '../../store/state';
@@ -12,10 +11,9 @@ import api from './../../back/server-api';
 
 import { PositiveResults } from '../Common/PositiveResults';
 import { Actions as AuthActions } from '../../actions/auth';
-import { PasswordStrengthMeter } from '../Common/PasswordStrengthMeter';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Redirect } from 'react-router';
+import { PasswordInputField, SubmitButton } from '../Common/Forms';
+import { Alert } from '../Common/Alert';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -42,7 +40,6 @@ declare type FormValues = {
 declare type State = {
   resetFinished: boolean;
   errorMsg: string;
-  pswVisible: boolean;
   wasLoggedIn?: boolean;
 };
 
@@ -50,7 +47,6 @@ class ResetPassword extends React.Component<Props, State> {
   state: State = {
     resetFinished: false,
     errorMsg: '',
-    pswVisible: false,
   };
 
   schema = yup.object().shape<FormValues>({
@@ -89,7 +85,7 @@ class ResetPassword extends React.Component<Props, State> {
       .exec('resetPassword', {
         token: this.props.match.params.token || '',
         password,
-        __delay: 500,
+        __delay: 100,
       })
       .then(({ user, uiSettings }) => {
         this.props.authActions.loginComplete(user, uiSettings);
@@ -107,16 +103,9 @@ class ResetPassword extends React.Component<Props, State> {
       });
   };
 
-  renderForm = ({
-    handleSubmit,
-    handleBlur,
-    handleChange,
-    values,
-    touched,
-    errors,
-    isSubmitting,
-  }: FormikProps<FormValues>) => {
-    const { errorMsg, pswVisible } = this.state;
+  renderForm = (fp: FormikProps<FormValues>) => {
+    const { handleSubmit, isSubmitting } = fp;
+    const { errorMsg } = this.state;
 
     return (
       <form
@@ -127,57 +116,19 @@ class ResetPassword extends React.Component<Props, State> {
       >
         {/* --- Пароль 1 ------------------------------- */}
 
-        <label htmlFor="" className="label">
-          Придумайте новый пароль
-        </label>
-        <div className="field has-addons">
-          <div className="control has-icons-left is-expanded">
-            <input
-              type={pswVisible ? 'text' : 'password'}
-              name="password"
-              placeholder={pswVisible ? 'Звездочки' : '*******'}
-              className="input"
-              maxLength={101}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.password}
-              disabled={isSubmitting}
-              autoComplete={'new-password'}
-            />
-            <span className="icon is-small is-left">
-              <i className="fa fa-lock" />
-            </span>
-
-            {touched.password && errors.password && (
-              <p className="help is-danger">{errors.password}</p>
-            )}
-          </div>
-          <div className="control">
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <a
-              className="button is-outlined"
-              href="#"
-              onClick={() => this.setState({ pswVisible: !pswVisible })}
-            >
-              <span className="icon is-small">
-                <i
-                  className={classNames('fa', {
-                    'fa-eye': !pswVisible,
-                    'fa-eye-slash': pswVisible,
-                  })}
-                />
-              </span>
-            </a>
-          </div>
+        <div className="field">
+          <p>Придумайте новый пароль:</p>
         </div>
 
-        {/* --- Мощь пароля ------------------------------- */}
-
-        {values.password && (
-          <div className="field">
-            <PasswordStrengthMeter password={values.password} />
-          </div>
-        )}
+        <PasswordInputField
+          label=""
+          fp={fp}
+          name="password"
+          leftIcon="fa-lock"
+          enableEyeButton={true}
+          enableStrengthMeter={true}
+          maxLength={101}
+        />
 
         {/* --- Пароль 2 ------------------------------- */}
 
@@ -211,28 +162,19 @@ class ResetPassword extends React.Component<Props, State> {
 
         {errorMsg && (
           <div className="field">
-            <div className="notification is-danger is-light">
-              <button
-                className="delete"
-                onClick={() => this.setState({ errorMsg: '' })}
-              />
+            <Alert
+              type={'danger'}
+              onClose={() => this.setState({ errorMsg: '' })}
+            >
               {errorMsg}
-            </div>
+            </Alert>
           </div>
         )}
 
         {/* --- Submit -------------- */}
 
         <div className="field">
-          <button
-            type="submit"
-            className={classNames('button is-primary', {
-              'is-loading': isSubmitting,
-            })}
-            disabled={isSubmitting}
-          >
-            Сохранить
-          </button>
+          <SubmitButton text="Продолжить" isSubmitting={isSubmitting} />
         </div>
       </form>
     );

@@ -53,11 +53,11 @@ class PersistImpl extends React.Component<
       }
     }
 
-    console.log(
-      `FormikPersist.cdm: formName="${
-        this.props.formName
-      }" values=${JSON.stringify(maybeValues, null, 2)}`,
-    );
+    // console.log(
+    //   `FormikPersist.cdm: formName="${
+    //     this.props.formName
+    //   }" values=${JSON.stringify(maybeValues, null, 2)}`,
+    // );
 
     if (maybeValues) {
       this.props.formik.setValues(maybeValues);

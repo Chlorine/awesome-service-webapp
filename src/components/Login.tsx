@@ -5,13 +5,18 @@ import { Link } from 'react-router-dom';
 import { Formik, FormikHelpers, FormikProps } from 'formik';
 import { LocationDescriptorObject } from 'history';
 import * as yup from 'yup';
-import classNames from 'classnames';
 
 import { Actions as AuthActions } from '../actions/auth';
 import { AppState } from '../store/state';
 import api from './../back/server-api';
 import { LoginResponse } from '../back/common/users';
 import { SimpleSpinner } from './Common/SimpleSpinner';
+import {
+  PasswordInputField,
+  SubmitButton,
+  TextInputField,
+} from './Common/Forms';
+import { Alert } from './Common/Alert';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -45,6 +50,8 @@ class Login extends React.Component<Props, State> {
     errorMsg: '',
   };
 
+  pswRef = React.createRef<any>();
+
   schema = yup.object().shape<FormValues>({
     username: yup
       .string()
@@ -77,6 +84,7 @@ class Login extends React.Component<Props, State> {
       .catch(() => {
         authActions.toggleAuthInProgress(false);
         this.setState({ isCheckingAuth: false });
+        this.pswRef && this.pswRef.current && this.pswRef.current.focus();
       });
   }
 
@@ -120,89 +128,46 @@ class Login extends React.Component<Props, State> {
     return { pathname: '/' };
   }
 
-  renderForm = ({
-    handleSubmit,
-    handleBlur,
-    handleChange,
-    values,
-    touched,
-    errors,
-    isSubmitting,
-  }: FormikProps<FormValues>) => {
+  renderForm = (fp: FormikProps<FormValues>) => {
+    const { handleSubmit, isSubmitting } = fp;
     const { errorMsg } = this.state;
 
     return (
       <form className="box" noValidate onSubmit={handleSubmit}>
-        <div className="field">
-          <label htmlFor="" className="label">
-            Email
-          </label>
-          <div className="control has-icons-left">
-            <input
-              type="email"
-              name="username"
-              placeholder="abc@example.com"
-              className="input"
-              maxLength={321}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.username}
-              disabled={isSubmitting}
-            />
-            <span className="icon is-small is-left">
-              <i className="fa fa-envelope" />
-            </span>
-          </div>
-          {touched.username && errors.username && (
-            <p className="help is-danger">{errors.username}</p>
-          )}
-        </div>
-        <div className="field">
-          <label htmlFor="" className="label">
-            Пароль
-          </label>
-          <div className="control has-icons-left">
-            <input
-              type="password"
-              name="password"
-              placeholder="*******"
-              className="input"
-              maxLength={101}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.password}
-              disabled={isSubmitting}
-            />
-            <span className="icon is-small is-left">
-              <i className="fa fa-lock" />
-            </span>
-            {touched.password && errors.password && (
-              <p className="help is-danger">{errors.password}</p>
-            )}
-          </div>
-        </div>
-        {/* -- Ошибка входа ------------------*/}
+        {/* -- Логин (емейл) --------- */}
+        <TextInputField
+          type={'email'}
+          label={'Email'}
+          placeholder={'abc@example.com'}
+          fp={fp}
+          name={'username'}
+          maxLength={321}
+          leftIcon={'fa-envelope'}
+          innerRef={this.pswRef}
+        />
+        {/* -- Пароль ------------------ */}
+        <PasswordInputField
+          label="Пароль"
+          fp={fp}
+          name="password"
+          maxLength={101}
+          leftIcon="fa-lock"
+          enableEyeButton={true}
+        />
+        {/* -- Ошибка входа ------------------ */}
         {errorMsg && (
           <div className="field">
-            <div className="notification is-danger is-light">
-              <button
-                className="delete"
-                onClick={() => this.setState({ errorMsg: '' })}
-              />
+            <Alert
+              type={'danger'}
+              onClose={() => this.setState({ errorMsg: '' })}
+            >
               {errorMsg}
-            </div>
+            </Alert>
           </div>
         )}
+        {/* -- Submit ------------------ */}
         <div className="field">
-          <button
-            type="submit"
-            className={classNames('button is-primary', {
-              'is-loading': isSubmitting,
-            })}
-            disabled={isSubmitting}
-          >
-            Вход
-          </button>
+          <SubmitButton text="Вход" isSubmitting={isSubmitting} />
         </div>
       </form>
     );

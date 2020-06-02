@@ -7,7 +7,11 @@ export type EventInfoLoaded = {
   event: PublicEventInfo;
 };
 
-export type ActionType = EventInfoLoaded;
+export type EventInfoReset = {
+  type: '@currentEvent/eventInfoReset';
+}
+
+export type ActionType = EventInfoLoaded | EventInfoReset;
 
 export const Actions = {
   eventInfoLoaded: (event: PublicEventInfo) => {
@@ -18,4 +22,11 @@ export const Actions = {
       });
     };
   },
+  eventInfoReset: () => {
+    return (dispatch: Dispatch<ActionType>) => {
+      dispatch({
+        type: '@currentEvent/eventInfoReset',
+      });
+    };
+  }
 };

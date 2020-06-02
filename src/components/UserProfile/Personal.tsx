@@ -1,12 +1,22 @@
 import React from 'react';
 import * as yup from 'yup';
 import { Formik, FormikProps, FormikHelpers } from 'formik';
-import classNames from 'classnames';
+import { format, getDaysInMonth, parse, startOfDay } from 'date-fns';
 
 import api from '../../back/server-api';
 
 import { UserInfo } from '../../back/common/users';
+import { Params as UserApiParams } from '../../back/common/users/api';
 import { SimpleSpinner } from '../Common/SimpleSpinner';
+import { UnmountHelper } from '../../utils/unmount-helper';
+
+import {
+  FieldValidationStatus,
+  SubmitButton,
+  TextInputField,
+} from '../Common/Forms';
+
+import { Alert } from '../Common/Alert';
 
 declare type Props = {};
 
@@ -16,20 +26,36 @@ declare type State = {
   submitErrorMsg: string;
   userInfo?: UserInfo;
   submitOkMsgVisible: boolean;
+  somethingChanged: boolean;
+};
+
+declare type BirthdayValues = {
+  bdDay: number;
+  bdMonth: number;
+  bdYear: number;
 };
 
 declare type FormValues = {
   firstName: string;
   middleName?: string;
   lastName: string;
+  withBirthday?: boolean;
+} & BirthdayValues;
+
+const _BD_YEAR = {
+  max: new Date().getFullYear(),
+  min: new Date().getFullYear() - 150,
 };
 
 export default class Personal extends React.Component<Props, State> {
+  uh = new UnmountHelper();
+
   state: State = {
     isFetching: true,
     fetchErrorMsg: '',
     submitErrorMsg: '',
     submitOkMsgVisible: false,
+    somethingChanged: false,
   };
 
   schema = yup.object().shape<FormValues>({
@@ -47,145 +73,320 @@ export default class Personal extends React.Component<Props, State> {
       .required()
       .max(64)
       .trim(),
+    withBirthday: yup.boolean(),
+    bdDay: yup
+      .number()
+      .required()
+      .min(1)
+      .test('is-correct-day-of-month', 'Некорректный день месяца', function(
+        day,
+      ) {
+        if (!this.resolve(yup.ref('withBirthday'))) {
+          return true;
+        }
+
+        let maxDayNr = 31;
+
+        const year = this.resolve(yup.ref('bdYear'));
+        if (year && 4 === String(year).length) {
+          const month = this.resolve(yup.ref('bdMonth'));
+          maxDayNr = getDaysInMonth(new Date(year, month));
+        }
+
+        return day <= maxDayNr;
+      }),
+    bdMonth: yup.number().required(),
+    bdYear: yup
+      .number()
+      .required()
+      .max(_BD_YEAR.max)
+      .min(_BD_YEAR.min),
   });
 
   componentDidMount(): void {
+    this.uh.onMount();
     document.title = 'Мои данные';
 
-    this.setState({ isFetching: true });
+    this.setState({ isFetching: true, fetchErrorMsg: '' });
 
-    api.users
-      .exec('getProfile', { __delay: 0, __genErr: false })
-      .then(({ userInfo }) => this.setState({ userInfo }))
-      .catch(err => this.setState({ fetchErrorMsg: err.message }))
-      .then(() => this.setState({ isFetching: false }));
+    this.uh
+      .wrap(api.users.exec('getProfile', { __delay: 0, __genErr: false }))
+      .then(({ err, results }) => {
+        this.setState({ isFetching: false });
+
+        if (err) {
+          this.setState({ fetchErrorMsg: err.message });
+        } else {
+          const { userInfo } = results;
+          this.setState({ userInfo });
+        }
+      });
+  }
+
+  componentWillUnmount(): void {
+    this.uh.onUnmount();
   }
 
   onSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
     values = this.schema.cast(values) as FormValues;
 
-    const { firstName, middleName, lastName } = values;
+    const { firstName, middleName, lastName, withBirthday } = values;
 
     this.setState({
       submitErrorMsg: '',
       submitOkMsgVisible: false,
     });
 
-    api.users
-      .exec('updateProfile', {
-        firstName,
-        middleName,
-        lastName,
-        __delay: 200,
-        __genErr: false,
-      })
-      .then(({ userInfo }) =>
-        this.setState({
-          userInfo,
-          submitOkMsgVisible: true,
+    const params: UserApiParams<'updateProfile'> = {
+      firstName,
+      middleName,
+      lastName,
+    };
+
+    if (withBirthday) {
+      const { bdDay, bdMonth, bdYear } = values;
+      params.birthday = format(new Date(bdYear, bdMonth, bdDay), 'yyyy-MM-dd');
+    } else {
+      params.birthday = null;
+    }
+
+    this.uh
+      .wrap(
+        api.users.exec('updateProfile', {
+          ...params,
+          __delay: 200,
+          __genErr: false,
         }),
       )
-      .catch(err => this.setState({ submitErrorMsg: err.message }))
-      .then(() => actions.setSubmitting(false));
+      .then(({ err, results }) => {
+        actions.setSubmitting(false);
+
+        if (err) {
+          this.setState({ submitErrorMsg: err.message });
+        } else {
+          const { userInfo } = results;
+
+          this.setState({
+            userInfo,
+            submitOkMsgVisible: true,
+            somethingChanged: false,
+          });
+
+          this.uh.setTimeout(
+            () => this.setState({ submitOkMsgVisible: false }),
+            2000,
+          );
+        }
+      });
   };
 
-  renderForm = ({
-    handleSubmit,
-    handleBlur,
-    handleChange,
-    values,
-    touched,
-    errors,
-    isSubmitting,
-    setFieldValue,
-  }: FormikProps<FormValues>) => {
-    const { submitErrorMsg, submitOkMsgVisible } = this.state;
+  onFormValueChange = () => {
+    this.setState({
+      somethingChanged: true,
+      submitOkMsgVisible: false,
+    });
+  };
+
+  get userBirthday(): BirthdayValues {
+    const { userInfo } = this.state;
+
+    if (userInfo && userInfo.birthday) {
+      try {
+        const bd = parse(
+          userInfo.birthday,
+          'yyyy-MM-dd',
+          startOfDay(new Date()),
+        );
+
+        return {
+          bdDay: bd.getDate(),
+          bdMonth: bd.getMonth(),
+          bdYear: bd.getFullYear(),
+        };
+      } catch (err) {
+        // oops
+      }
+    }
+
+    return {
+      bdDay: 1,
+      bdMonth: 0,
+      bdYear: 1970,
+    };
+  }
+
+  renderForm = (fp: FormikProps<FormValues>) => {
+    const {
+      handleSubmit,
+      isSubmitting,
+      values,
+      handleBlur,
+      handleChange,
+      setFieldValue,
+    } = fp;
+    const { submitErrorMsg, submitOkMsgVisible, somethingChanged } = this.state;
+    const { withBirthday } = values;
 
     return (
       <form noValidate onSubmit={handleSubmit}>
         {/* --- Имя ----------------------------------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Имя
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="firstName"
-              placeholder="Иван"
-              className="input"
-              maxLength={65}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.firstName}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.firstName && errors.firstName && (
-            <p className="help is-danger">{errors.firstName}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Имя"
+          placeholder="Иван"
+          fp={fp}
+          name={'firstName'}
+          maxLength={65}
+          onChange={this.onFormValueChange}
+        />
 
         {/* --- Отчество ----------------------------------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Отчество
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="middleName"
-              placeholder="Иванович"
-              className="input"
-              maxLength={65}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.middleName}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.middleName && errors.middleName && (
-            <p className="help is-danger">{errors.middleName}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Отчество"
+          placeholder="Иванович"
+          fp={fp}
+          name={'middleName'}
+          maxLength={65}
+          onChange={this.onFormValueChange}
+        />
 
         {/* --- Фамилия ----------------------------------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Фамилия
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="lastName"
-              placeholder="Иванов"
-              className="input"
-              maxLength={65}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.lastName}
-              disabled={isSubmitting}
-            />
+        <TextInputField
+          label="Фамилия"
+          placeholder="Иванов"
+          fp={fp}
+          name={'lastName'}
+          maxLength={65}
+          onChange={this.onFormValueChange}
+        />
+
+        {/* --- День рождения ---------------------------------*/}
+
+        {!withBirthday && (
+          <div className="field">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            <a
+              onClick={() => {
+                setFieldValue('withBirthday', true);
+                this.onFormValueChange();
+              }}
+            >
+              Указать день рождения
+            </a>
           </div>
-          {touched.lastName && errors.lastName && (
-            <p className="help is-danger">{errors.lastName}</p>
-          )}
-        </div>
+        )}
+
+        {withBirthday && (
+          <>
+            <div
+              className="columns is-gapless is-mobile"
+              style={{ marginBottom: '0.5rem' }}
+            >
+              <div className="column label">День рождения</div>
+              <div className="column has-text-right">
+                <button
+                  className="delete"
+                  onClick={() => {
+                    setFieldValue('withBirthday', false);
+                    const defaultBD = this.userBirthday;
+                    setFieldValue('bdDay', defaultBD.bdDay);
+                    setFieldValue('bdMonth', defaultBD.bdMonth);
+                    setFieldValue('bdYear', defaultBD.bdYear);
+                    this.onFormValueChange();
+                  }}
+                />
+              </div>
+            </div>
+            <div className="field">
+              <div className="columns is-mobile">
+                <div className="column is-3">
+                  <div className="control">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      name="bdDay"
+                      placeholder="День"
+                      className="input"
+                      maxLength={2}
+                      onBlur={handleBlur}
+                      onChange={e => {
+                        handleChange(e);
+                        this.onFormValueChange();
+                      }}
+                      value={values.bdDay}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+                <div className="column is-5">
+                  <div className="control">
+                    <div className="select is-fullwidth">
+                      <select
+                        disabled={isSubmitting}
+                        name="bdMonth"
+                        value={values.bdMonth}
+                        onChange={e => {
+                          handleChange(e);
+                          this.onFormValueChange();
+                        }}
+                        onBlur={handleBlur}
+                      >
+                        <option value="0">января</option>
+                        <option value="1">февраля</option>
+                        <option value="2">марта</option>
+                        <option value="3">апреля</option>
+                        <option value="4">мая</option>
+                        <option value="5">июня</option>
+                        <option value="6">июля</option>
+                        <option value="7">августа</option>
+                        <option value="8">сентября</option>
+                        <option value="9">октября</option>
+                        <option value="10">ноября</option>
+                        <option value="11">декабря</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div className="column is-4">
+                  <div className="control">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      name="bdYear"
+                      placeholder="Год"
+                      className="input"
+                      maxLength={4}
+                      onBlur={handleBlur}
+                      onChange={e => {
+                        handleChange(e);
+                        this.onFormValueChange();
+                      }}
+                      value={values.bdYear}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div style={{ marginTop: '-1.25rem', marginBottom: '1.25rem' }}>
+                <FieldValidationStatus fp={fp} name={'bdDay'} title="День" />
+                <FieldValidationStatus fp={fp} name={'bdYear'} title="Год" />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* --- Ошибка сохранения ----------------------------------------*/}
 
         {submitErrorMsg && (
           <div className="field">
-            <div className="notification is-danger is-light">
-              <button
-                className="delete"
-                onClick={() => this.setState({ submitErrorMsg: '' })}
-              />
+            <Alert
+              type={'danger'}
+              onClose={() => this.setState({ submitErrorMsg: '' })}
+            >
               {submitErrorMsg}
-            </div>
+            </Alert>
           </div>
         )}
 
@@ -193,48 +394,50 @@ export default class Personal extends React.Component<Props, State> {
 
         {submitOkMsgVisible && (
           <div className="field">
-            <div className="notification is-success is-light">
-              <button
-                className="delete"
-                onClick={() => this.setState({ submitOkMsgVisible: false })}
-              />
+            <Alert
+              type={'success'}
+              onClose={() => this.setState({ submitOkMsgVisible: false })}
+            >
               Изменения сохранены
-            </div>
+            </Alert>
           </div>
         )}
 
         {/* --- Сабмит ----------------------------------------*/}
 
-        <div className="field">
-          <button
-            type="submit"
-            className={classNames('button is-primary', {
-              'is-loading': isSubmitting,
-            })}
-            disabled={isSubmitting}
-          >
-            Сохранить изменения
-          </button>
-        </div>
+        {somethingChanged && !submitOkMsgVisible && (
+          <div className="field">
+            <SubmitButton
+              text="Сохранить изменения"
+              isSubmitting={isSubmitting}
+            />
+          </div>
+        )}
       </form>
     );
   };
 
   get formInitialValues(): FormValues {
-    const values: FormValues = {
+    let values: FormValues = {
       firstName: '',
       middleName: '',
       lastName: '',
+      bdDay: 1,
+      bdMonth: 0,
+      bdYear: 1970,
+      withBirthday: false,
     };
 
     const { userInfo } = this.state;
 
     if (userInfo) {
-      const { firstName, middleName, lastName } = userInfo;
+      const { firstName, middleName, lastName, birthday } = userInfo;
 
       values.firstName = firstName;
       values.middleName = middleName;
       values.lastName = lastName;
+
+      values = { ...values, ...this.userBirthday, withBirthday: !!birthday };
     }
 
     return values;
@@ -269,10 +472,11 @@ export default class Personal extends React.Component<Props, State> {
               </div>
             )}
             <div className="columns">
-              <div className="column is-8-tablet is-6-desktop is-5-widescreen is-4-fullhd">
+              <div className="column is-10-tablet is-7-desktop is-6-widescreen is-5-fullhd">
                 <div className="box">
                   <Formik
                     initialValues={this.formInitialValues}
+                    enableReinitialize={true}
                     validationSchema={this.schema}
                     onSubmit={this.onSubmit}
                   >

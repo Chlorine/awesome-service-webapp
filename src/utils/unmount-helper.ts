@@ -1,3 +1,8 @@
+export type WrapRes<T> = {
+  err?: Error | null;
+  results: T;
+};
+
 export class UnmountHelper {
   isMounted: boolean;
 
@@ -23,7 +28,32 @@ export class UnmountHelper {
     }, timeout);
   }
 
-  async wrap<T>(
+  async wrap<T>(promise: Promise<T>) {
+    return new Promise<WrapRes<T>>(resolve => {
+      promise
+        .then(results => {
+          if (this.isMounted) {
+            resolve({ err: null, results });
+          } else {
+            console.warn(
+              `UnmountHelper.wrap: promise resolved but parent already unmounted`,
+            );
+          }
+        })
+        .catch(err => {
+          if (this.isMounted) {
+            // @ts-ignore
+            resolve({ err });
+          } else {
+            console.warn(
+              `UnmountHelper.wrap: promise rejected but parent already unmounted`,
+            );
+          }
+        });
+    });
+  }
+
+  async wrap2<T>(
     promise: Promise<T>,
   ): Promise<{ stillMounted: boolean; err?: Error; results: T }> {
     try {

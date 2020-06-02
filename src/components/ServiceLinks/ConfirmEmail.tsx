@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import api from '../../back/server-api';
 import { PositiveResults } from '../Common/PositiveResults';
 import { Actions as AuthActions } from '../../actions/auth';
+import { Alert } from '../Common/Alert';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -72,9 +73,9 @@ class ConfirmEmail extends React.Component<Props, State> {
               </div>
             )}
             {!isWorking && errorMsg && (
-              <div className="notification is-danger is-light">
+              <Alert type="danger">
                 Ошибка подтверждения email: {errorMsg}
-              </div>
+              </Alert>
             )}
             {!isWorking && !errorMsg && (
               <>

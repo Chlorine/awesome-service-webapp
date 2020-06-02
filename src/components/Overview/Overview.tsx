@@ -4,11 +4,17 @@ import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import api from '../../back/server-api';
+
 import { SummaryEventsInfo } from '../../back/common/public-events';
 import produce from 'immer';
-import { SimpleSpinner } from '../Common/SimpleSpinner';
 import { Pluralize, Words } from '../../utils/pluralize-ru';
 import { Link } from 'react-router-dom';
+import { UnmountHelper } from '../../utils/unmount-helper';
+import {
+  VEFetchError,
+  VEFetchingSpinner,
+  VEPageTitle,
+} from '../Common/ViewElements';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -33,6 +39,8 @@ declare type State = {
 };
 
 class Overview extends React.Component<Props, State> {
+  uh = new UnmountHelper();
+
   state: State = {
     isFetching: true,
     errorMsg: '',
@@ -40,27 +48,33 @@ class Overview extends React.Component<Props, State> {
   };
 
   componentDidMount(): void {
+    this.uh.onMount();
+
     document.title = 'Мои сервисы';
 
-    this.setState({ isFetching: true });
+    this.setState({ isFetching: true, errorMsg: '' });
 
-    Promise.all([api.events.exec('getSummary', { __delay: 0 })])
-      .then(results => {
-        // results[0].summary.eventCount = 102;
-        // results[0].summary.actualEventCount = 34;
-        // results[0].summary.totalVisitors = 32051;
+    this.uh
+      .wrap(Promise.all([api.events.exec('getSummary', {})]))
+      .then(({ err, results }) => {
         this.setState(
           produce((prevState: State) => {
-            prevState.summary.events = results[0].summary;
+            prevState.isFetching = false;
+            if (err) {
+              prevState.errorMsg = err.message;
+            } else {
+              prevState.summary.events = results[0].summary;
+            }
           }),
         );
-      })
-      .catch(err => this.setState({ errorMsg: err.message }))
-      .then(() => this.setState({ isFetching: false }));
+      });
+  }
+
+  componentWillUnmount(): void {
+    this.uh.onUnmount();
   }
 
   render() {
-    // const { auth } = this.props;
     const { isFetching, errorMsg, summary } = this.state;
 
     const { events } = summary;
@@ -69,20 +83,17 @@ class Overview extends React.Component<Props, State> {
       <section className="hero is-white">
         <div className="hero-body">
           {/* --- Титле ---------------------------- */}
-          <div className="container">
-            <h3 className="title has-text-grey">Мои сервисы</h3>
-            <br />
-            {isFetching && !errorMsg && <SimpleSpinner text="Загрузка..." />}
-            {!isFetching && errorMsg && (
-              <div className="notification is-danger is-light">
-                Не удалось загрузить сводку по сервисам: {errorMsg}
-              </div>
-            )}
-            {/* --- Мероприятия -------------------*/}
 
+          <div className="container">
+            <VEPageTitle title="Мои сервисы" />
+            <br />
+            <VEFetchingSpinner isFetching={isFetching} />
+            <VEFetchError msg={errorMsg} />
+
+            {/* --- Мероприятия -------------------*/}
             {!isFetching && !!events && (
               <>
-                <h4 className="subtitle">Мероприятия</h4>
+                <h4 className="subtitle is-5">Мероприятия</h4>
                 <div className="columns">
                   <div className="column is-8-tablet is-7-desktop is-6-widescreen">
                     <div className="level box">

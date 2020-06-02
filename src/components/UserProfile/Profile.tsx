@@ -3,10 +3,12 @@ import { AppState } from '../../store/state';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Switch } from 'react-router';
-import { NavLink, Route, RouteComponentProps } from 'react-router-dom';
+import { Route, RouteComponentProps } from 'react-router-dom';
 
 import Personal from './Personal';
 import Password from './Password';
+import { SideMenu } from '../Common/SideMenu';
+import { VEPageTitle } from '../Common/ViewElements';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -47,7 +49,7 @@ class Profile extends React.Component<Props, State> {
           <div className="container">
             <div className="columns">
               <div className="column is-12">
-                <h3 className="title has-text-grey">Учетная запись</h3>
+                <VEPageTitle title="Учетная запись" />
                 <br />
               </div>
             </div>
@@ -57,29 +59,18 @@ class Profile extends React.Component<Props, State> {
             <div className="columns">
               <div className="column is-3-desktop is-4-tablet">
                 {/* --- Менюха --------------------------- */}
-                <aside className="menu">
-                  <p className="menu-label">Пользователь</p>
-                  <ul className="menu-list">
-                    {/* --- ФИО и прочее --------------------------- */}
-                    <li>
-                      <NavLink
-                        to={`${basePath}/personal`}
-                        activeClassName="is-active"
-                      >
-                        Мои данные
-                      </NavLink>
-                    </li>
-                    {/* --- Пароль --------------------------- */}
-                    <li>
-                      <NavLink
-                        to={`${basePath}/password`}
-                        activeClassName="is-active"
-                      >
-                        Пароль
-                      </NavLink>
-                    </li>
-                  </ul>
-                </aside>
+                <SideMenu
+                  basePath={basePath}
+                  sections={[
+                    {
+                      title: 'Пользователь',
+                      items: [
+                        { linkTo: '/personal', title: 'Мои данные' },
+                        { linkTo: '/password', title: 'Пароль' },
+                      ],
+                    },
+                  ]}
+                />
               </div>
               {/* --- Штуки справа от менюхи --------------------------- */}
               <div className="column is-9-desktop is-8-tablet">

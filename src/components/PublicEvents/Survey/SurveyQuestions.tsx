@@ -1,41 +1,26 @@
 import React from 'react';
 
-import { SimpleSpinner } from '../Common/SimpleSpinner';
-
-import { PublicEventInfo } from '../../back/common/public-events/event';
-
-import api from '../../back/server-api';
+import { SimpleSpinner } from '../../Common/SimpleSpinner';
 
 declare type Props = {};
 
 declare type State = {
   isFetching: boolean;
   errorMsg: string;
-  events: PublicEventInfo[];
 };
 
-export default class EventsArchive extends React.Component<Props, State> {
+export default class SurveyQuestions extends React.Component<Props, State> {
   state: State = {
-    isFetching: true,
+    isFetching: false,
     errorMsg: '',
-    events: [],
   };
 
   componentDidMount(): void {
-    document.title = 'Архив мероприятий';
-
-    this.setState({ isFetching: true });
-
-    api.events
-      .exec('getEvents', { __delay: 0, __genErr: false })
-      .then(({ events }) => this.setState({ events }))
-      .catch(err => this.setState({ errorMsg: err.message }))
-      .then(() => this.setState({ isFetching: false }));
+    document.title = 'Вопросы анкеты';
   }
 
   render() {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { isFetching, errorMsg, events } = this.state;
+    const { isFetching, errorMsg } = this.state;
 
     return (
       <div className="container">
@@ -50,7 +35,7 @@ export default class EventsArchive extends React.Component<Props, State> {
           <div className="columns">
             <div className="column is-12">
               <div className="notification is-danger is-light">
-                Не удалось загрузить мероприятия: {errorMsg}
+                Не удалось загрузить данные: {errorMsg}
               </div>
             </div>
           </div>
@@ -60,13 +45,13 @@ export default class EventsArchive extends React.Component<Props, State> {
             <div className="column is-12">
               <div className="box--">
                 <h3 className="title is-5 has-text-grey-light">
-                  Архив мероприятий
+                  Вопросы анкеты
                 </h3>
                 <h4 className="subtitle is-6 has-text-grey-lighter">
                   В разработке{' '}
                   <span className="icon">
                     <i className="fa fa-meh-o" />
-                  </span>{' '}
+                  </span>
                 </h4>
               </div>
             </div>

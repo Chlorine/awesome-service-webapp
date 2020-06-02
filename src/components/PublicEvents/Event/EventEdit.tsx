@@ -1,20 +1,25 @@
 import React from 'react';
 import * as yup from 'yup';
 import { Formik, FormikProps, FormikHelpers } from 'formik';
-import classNames from 'classnames';
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { add, parseISO } from 'date-fns';
 import DatePicker from 'react-datepicker';
 
-import { AppState } from '../../store/state';
-import { Actions as CurrentEventActions } from '../../actions/current-event';
+import { AppState } from '../../../store/state';
+import { Actions as CurrentEventActions } from '../../../actions/current-event';
 
-import api from '../../back/server-api';
+import api from '../../../back/server-api';
 
-import { UnmountHelper } from '../../utils/unmount-helper';
-import { SimpleSpinner } from '../Common/SimpleSpinner';
-import { SurveyInfo } from '../../back/common/public-events/survey';
+import { UnmountHelper } from '../../../utils/unmount-helper';
+import { SimpleSpinner } from '../../Common/SimpleSpinner';
+import { SurveyInfo } from '../../../back/common/public-events/survey';
+import { Alert } from '../../Common/Alert';
+import {
+  FieldValidationStatus,
+  SubmitButton,
+  TextInputField,
+} from '../../Common/Forms';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -94,24 +99,23 @@ class EventEdit extends React.Component<Props, State> {
   });
 
   componentDidMount(): void {
-    // document.title = 'Не ставим титле';
     this.uh.onMount();
+
+    document.title = 'Изменение параметров мероприятия';
 
     this.setState({ isFetching: true, fetchErrorMsg: '' });
 
     this.uh
       .wrap(api.events.exec('getSurveys', { __delay: 0, __genErr: false }))
-      .then(({ stillMounted, err, results }) => {
-        if (stillMounted) {
-          if (err) {
-            this.setState({ fetchErrorMsg: err.message });
-          } else {
-            const { surveys } = results;
-            this.setState({ surveys });
-          }
-
-          this.setState({ isFetching: false });
+      .then(({ err, results }) => {
+        if (err) {
+          this.setState({ fetchErrorMsg: err.message });
+        } else {
+          const { surveys } = results;
+          this.setState({ surveys });
         }
+
+        this.setState({ isFetching: false });
       });
   }
 
@@ -157,41 +161,46 @@ class EventEdit extends React.Component<Props, State> {
           __genErr: false,
         }),
       )
-      .then(({ stillMounted, err, results }) => {
-        if (stillMounted) {
-          if (err) {
-            this.setState({ submitErrorMsg: err.message });
-          } else {
-            const { event } = results;
+      .then(({ err, results }) => {
+        actions.setSubmitting(false);
 
-            this.props.currentEventActions.eventInfoLoaded(event);
+        if (err) {
+          this.setState({ submitErrorMsg: err.message });
+        } else {
+          const { event } = results;
 
-            this.setState({
-              submitOkMsgVisible: true,
-              somethingChanged: false,
-            });
+          this.props.currentEventActions.eventInfoLoaded(event);
 
-            this.uh.setTimeout(
-              () => this.setState({ submitOkMsgVisible: false }),
-              2000,
-            );
-          }
+          this.setState({
+            submitOkMsgVisible: true,
+            somethingChanged: false,
+          });
 
-          actions.setSubmitting(false);
+          this.uh.setTimeout(
+            () => this.setState({ submitOkMsgVisible: false }),
+            2000,
+          );
         }
       });
   };
 
-  renderForm = ({
-    handleSubmit,
-    handleBlur,
-    handleChange,
-    values,
-    touched,
-    errors,
-    isSubmitting,
-    setFieldValue,
-  }: FormikProps<FormValues>) => {
+  onFormValueChange = () => {
+    this.setState({
+      somethingChanged: true,
+      submitOkMsgVisible: false,
+    });
+  };
+
+  renderForm = (fp: FormikProps<FormValues>) => {
+    const {
+      handleSubmit,
+      handleBlur,
+      handleChange,
+      values,
+      isSubmitting,
+      setFieldValue,
+    } = fp;
+
     const {
       submitErrorMsg,
       submitOkMsgVisible,
@@ -203,128 +212,56 @@ class EventEdit extends React.Component<Props, State> {
       <form noValidate onSubmit={handleSubmit}>
         {/* --- Название ----------------------------------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Название
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="name"
-              placeholder="Мероприятие"
-              className="input"
-              maxLength={256}
-              onBlur={handleBlur}
-              onChange={e => {
-                this.setState({
-                  somethingChanged: true,
-                  submitOkMsgVisible: false,
-                });
-                handleChange(e);
-              }}
-              value={values.name}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.name && errors.name && (
-            <p className="help is-danger">{errors.name}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Название"
+          placeholder="Название мероприятия"
+          fp={fp}
+          name="name"
+          maxLength={256}
+          onChange={this.onFormValueChange}
+        />
 
         {/* --- Описание ----------------------------------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Описание
-          </label>
-          <div className="control">
-            <textarea
-              name="description"
-              placeholder="Краткое описание мероприятия"
-              className="textarea"
-              maxLength={513}
-              onBlur={handleBlur}
-              onChange={e => {
-                this.setState({
-                  somethingChanged: true,
-                  submitOkMsgVisible: false,
-                });
-                handleChange(e);
-              }}
-              value={values.description}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.description && errors.description && (
-            <p className="help is-danger">{errors.description}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Описание"
+          placeholder="Краткое описание мероприятия"
+          fp={fp}
+          name="description"
+          maxLength={513}
+          onChange={this.onFormValueChange}
+          isTextarea={true}
+        />
 
         {/* --- Название места проведения --------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Место проведения
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="placeName"
-              placeholder="Место проведения"
-              className="input"
-              maxLength={256}
-              onBlur={handleBlur}
-              onChange={e => {
-                this.setState({
-                  somethingChanged: true,
-                  submitOkMsgVisible: false,
-                });
-                handleChange(e);
-              }}
-              value={values.placeName}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.placeName && errors.placeName && (
-            <p className="help is-danger">{errors.placeName}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Место проведения"
+          placeholder="Название места проведения"
+          fp={fp}
+          name="placeName"
+          maxLength={256}
+          onChange={this.onFormValueChange}
+        />
 
         {/* --- Адрес места проведения --------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Адрес места проведения
-          </label>
-          <div className="control">
-            <textarea
-              name="placeAddress"
-              placeholder="Место проведения"
-              className="textarea"
-              maxLength={513}
-              onBlur={handleBlur}
-              onChange={e => {
-                this.setState({
-                  somethingChanged: true,
-                  submitOkMsgVisible: false,
-                });
-                handleChange(e);
-              }}
-              value={values.placeAddress}
-              disabled={isSubmitting}
-              rows={3}
-            />
-          </div>
-          {touched.placeAddress && errors.placeAddress && (
-            <p className="help is-danger">{errors.placeAddress}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Адрес места проведения"
+          placeholder="Адрес места проведения"
+          fp={fp}
+          name="placeAddress"
+          maxLength={513}
+          onChange={this.onFormValueChange}
+          isTextarea={true}
+          rows={3}
+        />
 
         {/* --- Даты начала и окончания ------------- */}
 
-        <div className="level">
-          <div className="level-left" style={{ alignItems: 'start' }}>
-            <div className="level-item">
+        <div className="field">
+          <div className="columns">
+            <div className="column is-6">
               {/* --- Дата начала --------------*/}
 
               <div className="field">
@@ -339,24 +276,20 @@ class EventEdit extends React.Component<Props, State> {
                     minDate={new Date()}
                     // maxDate={values.end}
                     onChange={date => {
-                      this.setState({
-                        somethingChanged: true,
-                        submitOkMsgVisible: false,
-                      });
                       setFieldValue('start', date);
+                      this.onFormValueChange();
                     }}
                     placeholderText={'Начало'}
                     onBlur={handleBlur}
                     dateFormat={'dd.MM.yyyy'}
                     todayButton={'Сегодня'}
+                    disabled={isSubmitting}
                   />
                 </div>
-                {touched.start && errors.start && (
-                  <p className="help is-danger">{errors.start}</p>
-                )}
+                <FieldValidationStatus fp={fp} name="start" />
               </div>
             </div>
-            <div className="level-item">
+            <div className="column is-6">
               {/* --- Дата окончания --------------*/}
 
               <div className="field">
@@ -371,21 +304,17 @@ class EventEdit extends React.Component<Props, State> {
                     minDate={values.start}
                     maxDate={undefined}
                     onChange={date => {
-                      this.setState({
-                        somethingChanged: true,
-                        submitOkMsgVisible: false,
-                      });
                       setFieldValue('end', date);
+                      this.onFormValueChange();
                     }}
                     placeholderText={'Окончание'}
                     onBlur={handleBlur}
                     dateFormat={'dd.MM.yyyy'}
                     todayButton={'Сегодня'}
+                    disabled={isSubmitting}
                   />
                 </div>
-                {touched.end && errors.end && (
-                  <p className="help is-danger">{errors.end}</p>
-                )}
+                <FieldValidationStatus fp={fp} name="end" />
               </div>
             </div>
           </div>
@@ -410,6 +339,7 @@ class EventEdit extends React.Component<Props, State> {
                   handleChange(e);
                 }}
                 onBlur={handleBlur}
+                disabled={isSubmitting}
               >
                 <option value="">Без анкеты</option>
                 {surveys.map(s => (
@@ -429,13 +359,12 @@ class EventEdit extends React.Component<Props, State> {
 
         {submitOkMsgVisible && (
           <div className="field">
-            <div className="notification is-success is-light">
-              <button
-                className="delete"
-                onClick={() => this.setState({ submitOkMsgVisible: false })}
-              />
+            <Alert
+              type={'success'}
+              onClose={() => this.setState({ submitOkMsgVisible: false })}
+            >
               Изменения сохранены
-            </div>
+            </Alert>
           </div>
         )}
 
@@ -443,13 +372,12 @@ class EventEdit extends React.Component<Props, State> {
 
         {submitErrorMsg && (
           <div className="field">
-            <div className="notification is-danger is-light">
-              <button
-                className="delete"
-                onClick={() => this.setState({ submitErrorMsg: '' })}
-              />
+            <Alert
+              type={'danger'}
+              onClose={() => this.setState({ submitErrorMsg: '' })}
+            >
               {submitErrorMsg}
-            </div>
+            </Alert>
           </div>
         )}
 
@@ -457,15 +385,10 @@ class EventEdit extends React.Component<Props, State> {
 
         {somethingChanged && !submitOkMsgVisible && (
           <div className="field">
-            <button
-              type="submit"
-              className={classNames('button is-primary', {
-                'is-loading': isSubmitting,
-              })}
-              disabled={isSubmitting}
-            >
-              Сохранить изменения
-            </button>
+            <SubmitButton
+              text="Сохранить изменения"
+              isSubmitting={isSubmitting}
+            />
           </div>
         )}
       </form>

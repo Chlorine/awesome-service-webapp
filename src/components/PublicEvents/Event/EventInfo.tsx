@@ -1,9 +1,9 @@
 import React from 'react';
-
-import { AppState } from '../../store/state';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
-import { formatEventDates } from '../../utils/format-event-date';
+
+import { AppState } from '../../../store/state';
+import { formatEventDates } from '../../../utils/format-event-date';
 
 const mapStateToProps = (state: AppState) => {
   return {

@@ -1,12 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { truncate } from 'lodash';
 
 import { SimpleSpinner } from '../Common/SimpleSpinner';
-
 import { PublicEventInfo } from '../../back/common/public-events/event';
 
 import api from '../../back/server-api';
+
 import { formatEventDates } from '../../utils/format-event-date';
-import { Link } from 'react-router-dom';
+import { UnmountHelper } from '../../utils/unmount-helper';
+import { VEPageSecondaryTitle } from '../Common/ViewElements';
 
 declare type Props = {};
 
@@ -16,7 +19,9 @@ declare type State = {
   events: PublicEventInfo[];
 };
 
-export default class ActualEvents extends React.Component<Props, State> {
+export default class EventsActual extends React.Component<Props, State> {
+  uh = new UnmountHelper();
+
   state: State = {
     isFetching: true,
     errorMsg: '',
@@ -24,15 +29,31 @@ export default class ActualEvents extends React.Component<Props, State> {
   };
 
   componentDidMount(): void {
+    this.uh.onMount();
+
     document.title = 'Актуальные мероприятия';
 
     this.setState({ isFetching: true });
+    this.uh
+      .wrap(
+        api.events.exec('getEvents', {
+          __delay: 0,
+          __genErr: false,
+        }),
+      )
+      .then(({ err, results }) => {
+        this.setState({ isFetching: false });
+        if (err) {
+          this.setState({ errorMsg: err.message });
+        } else {
+          const { events } = results;
+          this.setState({ events });
+        }
+      });
+  }
 
-    api.events
-      .exec('getEvents', { __delay: 0, __genErr: false })
-      .then(({ events }) => this.setState({ events }))
-      .catch(err => this.setState({ errorMsg: err.message }))
-      .then(() => this.setState({ isFetching: false }));
+  componentWillUnmount(): void {
+    this.uh.onUnmount();
   }
 
   render() {
@@ -60,21 +81,29 @@ export default class ActualEvents extends React.Component<Props, State> {
           <div className="columns">
             {events.length === 0 && (
               <div className="column is-12 has-text-centered">
-                Мероприятий нет
+                <p>Мероприятий нет</p>
+                <br />
+                <Link
+                  className="button is-primary is-outlined"
+                  to="/public-events/new"
+                >
+                  Создать
+                </Link>
               </div>
             )}
-            {events.length > 0 && (
+            {events.length !== 0 && (
               <div className="column is-12">
                 {events.map(event => (
                   <div key={event.id} className="box">
+                    <VEPageSecondaryTitle
+                      title={event.name}
+                      linkTo={`/public-event/${event.id}`}
+                    />
+                    <p className="subtitle is-6">
+                      {truncate(event.description, { length: 160 })}
+                    </p>
                     <article className="media">
                       <div className="media-content">
-                        <p className="title is-4 has-text-grey">
-                          <Link to={`/public-event/${event.id}`}>
-                            {event.name}
-                          </Link>
-                        </p>
-                        <p className="subtitle is-6">{event.description}</p>
                         {/* --- Даты проведения ----*/}
                         <p className="has-text-grey has-text-weight-bold">
                           <span className="icon">
@@ -83,7 +112,7 @@ export default class ActualEvents extends React.Component<Props, State> {
                           {formatEventDates(event.start, event.end)}
                         </p>
                         {/* --- Место проведения ----*/}
-                        <p className="has-text-grey-light has-text-weight-bold">
+                        <p className="has-text-grey">
                           <span className="icon">
                             <i className="fa fa-map-marker" />
                           </span>{' '}

@@ -3,8 +3,6 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { Formik, FormikHelpers, FormikProps } from 'formik';
 import * as yup from 'yup';
-import { Redirect } from 'react-router';
-import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 
 import { AppState } from '../store/state';
@@ -12,9 +10,17 @@ import { AppState } from '../store/state';
 import api from './../back/server-api';
 
 import { PositiveResults } from './Common/PositiveResults';
-import { PasswordStrengthMeter } from './Common/PasswordStrengthMeter';
 
 import { Actions as AuthActions } from '../actions/auth';
+
+import {
+  FieldValidationStatus,
+  PasswordInputField,
+  SubmitButton,
+  TextInputField,
+} from './Common/Forms';
+
+import { Alert } from './Common/Alert';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -145,164 +151,64 @@ class SignUp extends React.Component<Props, State> {
       });
   };
 
-  renderForm = ({
-    handleSubmit,
-    handleBlur,
-    handleChange,
-    values,
-    touched,
-    errors,
-    isSubmitting,
-    setFieldValue,
-  }: FormikProps<FormValues>) => {
-    const { errorMsg, pswVisible } = this.state;
+  renderForm = (fp: FormikProps<FormValues>) => {
+    const { handleSubmit, handleBlur, handleChange, values, isSubmitting } = fp;
+
+    const { errorMsg } = this.state;
 
     return (
       <form className="box" noValidate onSubmit={handleSubmit}>
         {/* --- Имя ---------------------------------------------- */}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Имя
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="firstName"
-              placeholder="Иван"
-              className="input"
-              maxLength={65}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.firstName}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.firstName && errors.firstName && (
-            <p className="help is-danger">{errors.firstName}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Имя"
+          placeholder="Иван"
+          fp={fp}
+          name={'firstName'}
+          maxLength={65}
+        />
 
         {/* --- Отчество ------------------------------ */}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Отчество
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="middleName"
-              placeholder="Иванович"
-              className="input"
-              maxLength={65}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.middleName}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.middleName && errors.middleName && (
-            <p className="help is-danger">{errors.middleName}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Отчество"
+          placeholder="Иванович"
+          fp={fp}
+          name={'middleName'}
+          maxLength={65}
+        />
 
         {/* --- Фамилия ----------------------------------- */}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Фамилия
-          </label>
-          <div className="control">
-            <input
-              type="text"
-              name="lastName"
-              placeholder="Иванов"
-              className="input"
-              maxLength={65}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.lastName}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.lastName && errors.lastName && (
-            <p className="help is-danger">{errors.lastName}</p>
-          )}
-        </div>
+        <TextInputField
+          label="Фамилия"
+          placeholder="Иванов"
+          fp={fp}
+          name={'lastName'}
+          maxLength={65}
+        />
 
         {/* --- Почта ------------------------------- */}
 
-        <div className="field">
-          <label htmlFor="" className="label">
-            Email
-          </label>
-          <div className="control">
-            <input
-              type="email"
-              name="username"
-              placeholder="abc@example.com"
-              className="input"
-              maxLength={321}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.username}
-              disabled={isSubmitting}
-            />
-          </div>
-          {touched.username && errors.username && (
-            <p className="help is-danger">{errors.username}</p>
-          )}
-        </div>
+        <TextInputField
+          type={'email'}
+          label={'Email'}
+          placeholder={'abc@example.com'}
+          fp={fp}
+          name={'username'}
+          maxLength={321}
+        />
 
         {/* --- Пароль ------------------------------- */}
 
-        <label htmlFor="" className="label">
-          Пароль
-        </label>
-        <div className="field has-addons">
-          <div className="control is-expanded">
-            <input
-              type={pswVisible ? 'text' : 'password'}
-              name="password"
-              placeholder={pswVisible ? 'Звездочки' : '*******'}
-              className="input"
-              maxLength={101}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              value={values.password}
-              disabled={isSubmitting}
-            />
-            {touched.password && errors.password && (
-              <p className="help is-danger">{errors.password}</p>
-            )}
-          </div>
-          <div className="control">
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <a
-              href={'#'}
-              className="button is-outlined"
-              onClick={() => this.setState({ pswVisible: !pswVisible })}
-            >
-              <span className="icon is-small">
-                <i
-                  className={classNames('fa', {
-                    'fa-eye': !pswVisible,
-                    'fa-eye-slash': pswVisible,
-                  })}
-                />
-              </span>
-            </a>
-          </div>
-        </div>
-
-        {/* --- Мощь пароля ------------------------------- */}
-
-        {values.password && (
-          <div className="field">
-            <PasswordStrengthMeter password={values.password} />
-          </div>
-        )}
+        <PasswordInputField
+          label={'Пароль'}
+          fp={fp}
+          name={'password'}
+          maxLength={101}
+          enableEyeButton={true}
+          enableStrengthMeter={true}
+        />
 
         {/* --- ПАРОЛЬ ЕЩЕ РАЗ ------------------------------- */}
         {/*<div className="field">*/}
@@ -342,9 +248,7 @@ class SignUp extends React.Component<Props, State> {
               Я согласен предоставить немножко персональных данных этому
               динамично развивающемуся проекту
             </label>
-            {touched.acceptLegalStuff && errors.acceptLegalStuff && (
-              <p className="help is-danger">{errors.acceptLegalStuff}</p>
-            )}
+            <FieldValidationStatus fp={fp} name="acceptLegalStuff" />
           </div>
         </div>
 
@@ -352,28 +256,19 @@ class SignUp extends React.Component<Props, State> {
 
         {errorMsg && (
           <div className="field">
-            <div className="notification is-danger is-light">
-              <button
-                className="delete"
-                onClick={() => this.setState({ errorMsg: '' })}
-              />
+            <Alert
+              type={'danger'}
+              onClose={() => this.setState({ errorMsg: '' })}
+            >
               {errorMsg}
-            </div>
+            </Alert>
           </div>
         )}
 
         {/* --- Submit -------------- */}
 
         <div className="field">
-          <button
-            type="submit"
-            className={classNames('button is-primary', {
-              'is-loading': isSubmitting,
-            })}
-            disabled={isSubmitting}
-          >
-            Зарегистрироваться
-          </button>
+          <SubmitButton text="Зарегистрироваться" isSubmitting={isSubmitting} />
         </div>
       </form>
     );

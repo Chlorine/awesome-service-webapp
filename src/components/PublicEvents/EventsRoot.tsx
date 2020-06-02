@@ -3,13 +3,18 @@ import { AppState } from '../../store/state';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Switch } from 'react-router';
-import { Link, NavLink, Route, RouteComponentProps } from 'react-router-dom';
+import { Route, RouteComponentProps } from 'react-router-dom';
 
-import ActualEvents from './ActualEvents';
+import EventsActual from './EventsActual';
 import EventsArchive from './EventsArchive';
-import EventCreate from './EventCreate';
+import EventsCreateNew from './EventsCreateNew';
 import Surveys from './Surveys';
-import SurveyCreate from './SurveyCreate';
+import SurveyCreate from './SurveysCreateNew';
+import { Breadcrumbs } from '../Common/Breadcrumbs';
+
+import './EventsRoot.scss';
+import { MenuSection, SideMenu } from '../Common/SideMenu';
+import { VEPageTitle } from '../Common/ViewElements';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -45,9 +50,35 @@ class EventsRoot extends React.Component<Props, State> {
     document.title = 'Мои мероприятия';
   }
 
+  private sideMenuSections: MenuSection[] = [
+    {
+      title: 'Мероприятия',
+      items: [
+        {
+          title: 'Актуальные',
+          linkTo: '/actual',
+        },
+        {
+          title: 'Архив',
+          linkTo: '/archive',
+        },
+        {
+          title: 'Создать мероприятие',
+          linkTo: '/new',
+        },
+      ],
+    },
+    {
+      title: 'Анкеты',
+      items: [
+        { title: 'Все анкеты', linkTo: '/surveys' },
+        { title: 'Создать анкету', linkTo: '/new-survey' },
+      ],
+    },
+  ];
+
   render() {
     const { path: basePath } = this.props.match;
-    // const basePath = //'/profile';
 
     return (
       <section className="hero is-white">
@@ -56,86 +87,25 @@ class EventsRoot extends React.Component<Props, State> {
           <div className="container">
             <div className="columns">
               <div className="column is-12">
-                <h3 className="title has-text-grey">Мои мероприятия</h3>
-                <nav className="breadcrumb" aria-label="breadcrumbs">
-                  <ul>
-                    <li>
-                      <Link to="/">Сервисы</Link>
-                    </li>
-                    <li className="is-active">
-                      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                      <a href="#" aria-current="page">
-                        Мероприятия
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-                <br />
+                <VEPageTitle title="Мои мероприятия" />
+                <Breadcrumbs
+                  items={[{ linkTo: '/', title: 'Сервисы' }]}
+                  current="Мероприятия"
+                />
               </div>
             </div>
           </div>
 
           {/* --- Остальное ------------------------*/}
 
-          <div className="container" style={{ marginTop: '0.75rem' }}>
+          <div className="container">
             <div className="columns">
               <div className="column is-2-fullhd is-3-desktop is-4-tablet">
                 {/* --- Менюха --------------------------- */}
-                <aside className="menu">
-                  {/* --- Мероприятия ------------------------*/}
-                  <p className="menu-label">Мероприятия</p>
-                  <ul className="menu-list">
-                    {/* --- Текущие --------------------------- */}
-                    <li>
-                      <NavLink
-                        to={`${basePath}/actual`}
-                        activeClassName="is-active"
-                      >
-                        Актуальные
-                      </NavLink>
-                    </li>
-                    {/* --- Прошедшие -------------- */}
-                    <li>
-                      <NavLink
-                        to={`${basePath}/archive`}
-                        activeClassName="is-active"
-                      >
-                        Архив
-                      </NavLink>
-                    </li>
-                    {/* --- Новое --------------------------- */}
-                    <li>
-                      <NavLink
-                        to={`${basePath}/new`}
-                        activeClassName="is-active"
-                      >
-                        Создать мероприятие
-                      </NavLink>
-                    </li>
-                  </ul>
-                  {/* --- Анкеты ------------------------*/}
-                  <p className="menu-label">Анкеты</p>
-                  <ul className="menu-list">
-                    {/* --- Текущие --------------------------- */}
-                    <li>
-                      <NavLink
-                        to={`${basePath}/surveys`}
-                        activeClassName="is-active"
-                      >
-                        Все анкеты
-                      </NavLink>
-                    </li>
-                    {/* --- Новая -------------- */}
-                    <li>
-                      <NavLink
-                        to={`${basePath}/new-survey`}
-                        activeClassName="is-active"
-                      >
-                        Создать анкету
-                      </NavLink>
-                    </li>
-                  </ul>
-                </aside>
+                <SideMenu
+                  basePath={basePath}
+                  sections={this.sideMenuSections}
+                />
               </div>
               {/* --- Штуки справа от менюхи --------------------------- */}
               <div className="column is-10-fullhd is-9-desktop is-8-tablet">
@@ -146,12 +116,12 @@ class EventsRoot extends React.Component<Props, State> {
                     component={() => <Redirect to={`${basePath}/actual`} />}
                   />
 
-                  <Route path={`${basePath}/actual`} component={ActualEvents} />
+                  <Route path={`${basePath}/actual`} component={EventsActual} />
                   <Route
                     path={`${basePath}/archive`}
                     component={EventsArchive}
                   />
-                  <Route path={`${basePath}/new`} component={EventCreate} />
+                  <Route path={`${basePath}/new`} component={EventsCreateNew} />
                   <Route path={`${basePath}/surveys`} component={Surveys} />
                   <Route
                     path={`${basePath}/new-survey`}

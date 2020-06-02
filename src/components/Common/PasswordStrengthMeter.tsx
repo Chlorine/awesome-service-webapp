@@ -55,7 +55,7 @@ export class PasswordStrengthMeter extends React.Component<Props, State> {
     const { score } = this.state;
 
     return (
-      <div className="is-size-7">
+      <span className="is-size-7">
         <strong className="has-text-grey">
           {this.props.caption || 'Надёжность пароля'}:
         </strong>{' '}
@@ -69,7 +69,7 @@ export class PasswordStrengthMeter extends React.Component<Props, State> {
         >
           {scoreToStr(score)}
         </strong>
-      </div>
+      </span>
     );
   }
 }

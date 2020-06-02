@@ -13,6 +13,9 @@ export const currentEventReducer = produce(
       case '@currentEvent/eventInfoLoaded':
         draft.event = action.event;
         break;
+      case '@currentEvent/eventInfoReset':
+        draft.event = null;
+        break;
     }
 
     return draft;
