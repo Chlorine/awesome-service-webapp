@@ -1,0 +1,23 @@
+.number-circle {
+  display: inline-block;
+  line-height: 0px;
+
+  border-radius: 50%;
+  border: 2px solid;
+
+  font-size: 1.25rem;
+}
+
+.number-circle span {
+  display: inline-block;
+
+  padding-top: 50%;
+  padding-bottom: 50%;
+
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.li-survey-question {
+  margin-bottom: 1.5rem;
+}

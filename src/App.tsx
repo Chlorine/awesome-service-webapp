@@ -23,6 +23,7 @@ import Profile from './components/UserProfile/Profile';
 import EventsRoot from './components/PublicEvents/EventsRoot';
 import Event from './components/PublicEvents/Event/Event';
 import Survey from './components/PublicEvents/Survey/Survey';
+import SurveyQuestion from './components/PublicEvents/Survey/Question';
 
 import Page1 from './components/Page1';
 import Page2 from './components/Page2';
@@ -63,6 +64,10 @@ function App() {
             <PrivateRoute
               path="/public-event-survey/:surveyId"
               component={Survey}
+            />
+            <PrivateRoute
+              path="/public-event-survey-question/:questionId"
+              component={SurveyQuestion}
             />
 
             <Route path="/service-link/:linkType" component={ServiceLink} />

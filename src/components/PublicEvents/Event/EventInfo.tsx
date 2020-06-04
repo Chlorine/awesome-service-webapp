@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import { AppState } from '../../../store/state';
 import { formatEventDates } from '../../../utils/format-event-date';
+import { VEDescriptionAsSubtitle } from '../../Common/ViewElements';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -45,8 +46,8 @@ class EventInfo extends React.Component<Props, State> {
         <div className="columns">
           <div className="column is-12">
             <div className="box">
-              <h3 className="title is-5 has-text-grey">{event.name}</h3>
-              <h4 className="subtitle is-6">{event.description}</h4>
+              <h3 className="title is-4 has-text-grey">{event.name}</h3>
+              <VEDescriptionAsSubtitle descr={event.description} />
               <p>
                 <strong>Место проведения: </strong>
                 {event.place.name}

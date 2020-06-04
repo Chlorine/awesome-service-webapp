@@ -447,6 +447,7 @@ class EventEdit extends React.Component<Props, State> {
                     initialValues={this.formInitialValues}
                     validationSchema={this.schema}
                     onSubmit={this.onSubmit}
+                    enableReinitialize={true}
                   >
                     {this.renderForm}
                   </Formik>

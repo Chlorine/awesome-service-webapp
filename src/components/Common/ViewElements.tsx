@@ -1,6 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
+import { truncate } from 'lodash';
 
 import { SimpleSpinner } from './SimpleSpinner';
 import { Alert } from './Alert';
@@ -29,15 +30,16 @@ export const VEFetchingSpinner: React.FC<{
 
 export const VEFetchError: React.FC<{
   msg?: string | null;
+  msgPrefix?: string;
   onClose?: () => void;
-}> = ({ msg, onClose }) => {
+}> = ({ msg, onClose, msgPrefix }) => {
   if (!msg) return null;
 
   return (
     <div className="columns">
       <div className="column is-12">
         <Alert type="danger" onClose={onClose}>
-          Не удалось загрузить данные: {msg}
+          {msgPrefix || 'Не удалось загрузить данные'}: {msg}
         </Alert>
       </div>
     </div>
@@ -63,10 +65,26 @@ export const VEPageTitle: React.FC<{ title: string; isFetching?: boolean }> = ({
 export const VEPageSecondaryTitle: React.FC<{
   title: string;
   linkTo?: string;
-}> = ({ title, linkTo }) => {
+  textClass?: string;
+}> = ({ title, linkTo, textClass }) => {
   return (
-    <h3 className="title ve-page-title is-5 has-text-grey">
+    <h3 className={`title ve-page-title is-5 ${textClass || 'has-text-grey'}`}>
       {linkTo ? <Link to={linkTo}>{title}</Link> : title}
     </h3>
+  );
+};
+
+export const VEDescriptionAsSubtitle: React.FC<{
+  descr?: string | null;
+  truncateTo?: number;
+  stub?: string;
+}> = ({ descr, truncateTo, stub }) => {
+  return (
+    <p className="subtitle is-6">
+      {descr && truncate(descr, { length: truncateTo || 160 })}
+      {!descr && (
+        <span className="has-text-grey-lighter">{stub || 'Без описания'}</span>
+      )}
+    </p>
   );
 };

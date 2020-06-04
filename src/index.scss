@@ -12,6 +12,7 @@ $roboto-condensed: 'Roboto Condensed';
 
 $navbar-breakpoint: 769px;
 $menu-item-active-background-color: rgba(24, 121, 107, 0.67);
+// $subtitle-negative-margin: -0.75rem;
 
 @import '~bulma/bulma.sass';
 
@@ -44,13 +45,16 @@ $loader-color: $grey-lightest;
   display: block;
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  /* display: none; <- Crashes Chrome on hover */
-  -webkit-appearance: none;
-  margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+// react-sortable-hoc
+
+.ul-sortable-container {
+  list-style-type: none;
 }
 
-input[type=number] {
-  -moz-appearance:textfield; /* Firefox */
+.li-sortable {
+  display: block;
+}
+
+.cursor-row-resize {
+  cursor: row-resize;
 }

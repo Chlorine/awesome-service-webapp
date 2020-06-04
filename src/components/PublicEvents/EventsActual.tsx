@@ -9,7 +9,10 @@ import api from '../../back/server-api';
 
 import { formatEventDates } from '../../utils/format-event-date';
 import { UnmountHelper } from '../../utils/unmount-helper';
-import { VEPageSecondaryTitle } from '../Common/ViewElements';
+import {
+  VEDescriptionAsSubtitle,
+  VEPageSecondaryTitle,
+} from '../Common/ViewElements';
 
 declare type Props = {};
 
@@ -95,16 +98,18 @@ export default class EventsActual extends React.Component<Props, State> {
               <div className="column is-12">
                 {events.map(event => (
                   <div key={event.id} className="box">
-                    <VEPageSecondaryTitle
-                      title={event.name}
-                      linkTo={`/public-event/${event.id}`}
-                    />
-                    <p className="subtitle is-6">
-                      {truncate(event.description, { length: 160 })}
-                    </p>
-                    <article className="media">
-                      <div className="media-content">
-                        {/* --- Даты проведения ----*/}
+                    <div className="media">
+                      <div className="media-left">
+                        <span className="icon is-large">
+                          <i className="fa fa-2x fa-star-o has-text-grey-light" />
+                        </span>
+                      </div>
+                      <div className="media-content zero-min-width">
+                        <VEPageSecondaryTitle
+                          title={event.name}
+                          linkTo={`/public-event/${event.id}`}
+                        />
+                        <VEDescriptionAsSubtitle descr={event.description} />
                         <p className="has-text-grey has-text-weight-bold">
                           <span className="icon">
                             <i className="fa fa-calendar" />
@@ -116,10 +121,10 @@ export default class EventsActual extends React.Component<Props, State> {
                           <span className="icon">
                             <i className="fa fa-map-marker" />
                           </span>{' '}
-                          {event.place.name}
+                          {truncate(event.place.name, { length: 100 })}
                         </p>
                       </div>
-                    </article>
+                    </div>
                   </div>
                 ))}
               </div>

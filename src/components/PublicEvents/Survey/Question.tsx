@@ -1,16 +1,17 @@
 import React from 'react';
+
 import { Route, RouteComponentProps } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 import { Redirect, Switch } from 'react-router';
 import { connect } from 'react-redux';
+import { truncate } from 'lodash';
 
 import api from '../../../back/server-api';
 
+import { AppState } from '../../../store/state';
+import { UnmountHelper } from '../../../utils/unmount-helper';
 import { MenuSection, SideMenu } from '../../Common/SideMenu';
 import { Breadcrumbs } from '../../Common/Breadcrumbs';
-import { AppState } from '../../../store/state';
-import { Actions as CurrentSurveyActions } from '../../../actions/current-survey';
-import { UnmountHelper } from '../../../utils/unmount-helper';
 
 import {
   VEFetchError,
@@ -18,57 +19,61 @@ import {
   VEPageTitle,
 } from '../../Common/ViewElements';
 
-import SurveyQuestions from './SurveyQuestions';
-import SurveyEdit from './SurveyEdit';
-import SurveyAnswers from './SurveyAnswers';
-import SurveyQuestionsCreateNew from './SurveyQuestionsCreateNew';
+import QuestionEdit from './QuestionEdit';
+import QuestionRemove from './QuestionRemove';
+
+import { Actions as CurrentQuestionActions } from '../../../actions/current-question';
 
 const mapStateToProps = (state: AppState) => {
   return {
     router: state.router,
+    currentQuestion: state.currentQuestion,
     currentSurvey: state.currentSurvey,
   };
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
-    currentSurveyActions: bindActionCreators(CurrentSurveyActions, dispatch),
+    currentQuestionActions: bindActionCreators(
+      CurrentQuestionActions,
+      dispatch,
+    ),
   };
 };
 
 declare type Props = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps<{ surveyId?: string }>;
+  RouteComponentProps<{ questionId?: string }>;
 
 declare type State = {
   isFetching: boolean;
   fetchErrorMsg: string;
 };
 
-class Survey extends React.Component<Props, State> {
+class Question extends React.Component<Props, State> {
   uh = new UnmountHelper();
 
   state: State = {
-    isFetching: false,
+    isFetching: true,
     fetchErrorMsg: '',
   };
 
-  get surveyId(): string {
-    return this.props.match.params.surveyId || 'invalid_survey_id';
+  get questionId(): string {
+    return this.props.match.params.questionId || 'invalid_question_id';
   }
 
   componentDidMount(): void {
     this.uh.onMount();
 
-    document.title = 'Анкета';
+    document.title = 'Вопрос';
 
-    this.props.currentSurveyActions.infoReset();
+    this.props.currentQuestionActions.infoReset();
     this.setState({ isFetching: true, fetchErrorMsg: '' });
 
     this.uh
       .wrap(
-        api.events.exec('getSurvey', {
-          id: this.surveyId,
+        api.events.exec('getSurveyQuestion', {
+          id: this.questionId,
           __delay: 0,
           __genErr: false,
         }),
@@ -78,9 +83,9 @@ class Survey extends React.Component<Props, State> {
         if (err) {
           this.setState({ fetchErrorMsg: err.message });
         } else {
-          const { survey } = results;
-          this.props.currentSurveyActions.infoLoaded(survey);
-          document.title = survey.name;
+          const { question } = results;
+          this.props.currentQuestionActions.infoLoaded(question);
+          document.title = question.text;
         }
       });
   }
@@ -91,25 +96,18 @@ class Survey extends React.Component<Props, State> {
 
   private sideMenuSections: MenuSection[] = [
     {
-      title: 'Анкета',
+      title: 'Вопрос',
       items: [
-        {
-          title: 'Вопросы',
-          linkTo: '/questions',
-        },
-        {
-          title: 'Создать вопрос',
-          linkTo: '/new-question',
-        },
         {
           title: 'Изменить параметры',
           linkTo: '/edit',
         },
+        {
+          title: 'Удаление',
+          linkTo: '/remove',
+          isDanger: false,
+        },
       ],
-    },
-    {
-      title: 'Ответы',
-      items: [{ title: 'Сводка', linkTo: '/answers' }],
     },
   ];
 
@@ -119,15 +117,10 @@ class Survey extends React.Component<Props, State> {
         <Route
           exact
           path={basePath}
-          component={() => <Redirect to={`${basePath}/questions`} />}
+          component={() => <Redirect to={`${basePath}/edit`} />}
         />
-        <Route path={`${basePath}/questions`} component={SurveyQuestions} />
-        <Route
-          path={`${basePath}/new-question`}
-          component={SurveyQuestionsCreateNew}
-        />
-        <Route path={`${basePath}/edit`} component={SurveyEdit} />
-        <Route path={`${basePath}/answers`} component={SurveyAnswers} />
+        <Route path={`${basePath}/edit`} component={QuestionEdit} />
+        <Route path={`${basePath}/remove`} component={QuestionRemove} />
         <Route
           component={() => (
             <small className="has-text-grey">
@@ -143,6 +136,9 @@ class Survey extends React.Component<Props, State> {
     const { url: basePath } = this.props.match;
 
     const { isFetching, fetchErrorMsg } = this.state;
+    const { question } = this.props.currentQuestion;
+
+    // может не быть если F5
     const { survey } = this.props.currentSurvey;
 
     return (
@@ -153,13 +149,15 @@ class Survey extends React.Component<Props, State> {
 
             <div className="columns">
               <div className="column is-12">
-                {/* --- Название анкеты ------------------------- */}
+                {/* --- Текст вопроса ------------------------- */}
 
                 <VEPageTitle
-                  title={survey?.name || 'Анкета'}
+                  title={question?.text || 'Текст вопроса'}
                   isFetching={isFetching}
                 />
+
                 {/* --- Навигация ------------------------- */}
+
                 <Breadcrumbs
                   items={[
                     { title: 'Сервисы', linkTo: '/' },
@@ -167,8 +165,12 @@ class Survey extends React.Component<Props, State> {
                       title: 'Анкеты мероприятий',
                       linkTo: '/public-events/surveys',
                     },
+                    {
+                      title: truncate(survey?.name || 'Анкета', { length: 32 }),
+                      linkTo: `/public-event-survey/${question?.surveyId}`,
+                    },
                   ]}
-                  current={survey && survey.name}
+                  current={question?.text}
                   currentMaxLength={32}
                 />
               </div>
@@ -180,7 +182,7 @@ class Survey extends React.Component<Props, State> {
           <div className="container">
             <VEFetchingSpinner isFetching={isFetching} />
             <VEFetchError msg={fetchErrorMsg} />
-            {!isFetching && !fetchErrorMsg && survey && (
+            {!isFetching && !fetchErrorMsg && question && (
               <div className="columns">
                 {/* --- Menu ----------------------- */}
 
@@ -205,4 +207,4 @@ class Survey extends React.Component<Props, State> {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Survey);
+export default connect(mapStateToProps, mapDispatchToProps)(Question);

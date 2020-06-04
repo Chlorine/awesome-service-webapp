@@ -3,3 +3,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+// https://css-tricks.com/flexbox-truncated-text/
+.zero-min-width {
+  min-width: 0;
+}
+

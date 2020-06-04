@@ -166,11 +166,12 @@ export function PasswordInputField<Values, FieldName extends keyof Values>({
 export const SubmitButton: React.FC<{
   text: string;
   isSubmitting: boolean;
-}> = ({ text, isSubmitting }) => {
+  buttonClass?: string;
+}> = ({ text, isSubmitting, buttonClass }) => {
   return (
     <button
       type="submit"
-      className={classNames('button is-primary', {
+      className={classNames(`button ${buttonClass || 'is-primary'}`, {
         'is-loading': isSubmitting,
       })}
       disabled={isSubmitting}

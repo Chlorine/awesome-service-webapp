@@ -2,18 +2,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import RU from 'date-fns/locale/ru';
 
-import { SimpleSpinner } from '../Common/SimpleSpinner';
 import { SurveyInfo } from '../../back/common/public-events/survey';
 
 import api from '../../back/server-api';
 import { UnmountHelper } from '../../utils/unmount-helper';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import {
+  VEDescriptionAsSubtitle,
   VEFetchError,
   VEFetchingSpinner,
   VEPageSecondaryTitle,
 } from '../Common/ViewElements';
-import { truncate } from 'lodash';
 
 declare type Props = {};
 
@@ -71,7 +70,7 @@ export default class Surveys extends React.Component<Props, State> {
           <div className="columns">
             {surveys.length === 0 && (
               <div className="column is-12 has-text-centered">
-                <p>Анкет нет</p>
+                <p>Анкет еще нет</p>
                 <br />
                 <Link
                   className="button is-primary is-outlined"
@@ -85,23 +84,27 @@ export default class Surveys extends React.Component<Props, State> {
               <div className="column is-12">
                 {surveys.map(survey => (
                   <div key={survey.id} className="box">
-                    <VEPageSecondaryTitle
-                      title={survey.name}
-                      linkTo={`/public-event-survey/${survey.id}`}
-                    />
-                    <p
-                      className="subtitle is-6"
-                      style={{ marginBottom: '0.5rem' }}
-                    >
-                      {truncate(survey.description, { length: 160 })}
-                    </p>
-                    <p className="is-size-7">
-                      Обновлено{' '}
-                      {formatDistanceToNow(parseISO(survey.updatedAt), {
-                        addSuffix: true,
-                        locale: RU,
-                      })}
-                    </p>
+                    <div className="media">
+                      <div className="media-left">
+                        <span className="icon is-large">
+                          <i className="fa fa-2x fa-list-ol has-text-grey-light" />
+                        </span>
+                      </div>
+                      <div className="media-content zero-min-width">
+                        <VEPageSecondaryTitle
+                          title={survey.name}
+                          linkTo={`/public-event-survey/${survey.id}`}
+                        />
+                        <VEDescriptionAsSubtitle descr={survey.description} />
+                        <p className="is-size-7">
+                          Обновлено{' '}
+                          {formatDistanceToNow(parseISO(survey.updatedAt), {
+                            addSuffix: true,
+                            locale: RU,
+                          })}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -6,6 +6,7 @@ export type MenuSection = {
   items: Array<{
     title: string;
     linkTo: string;
+    isDanger?: boolean;
   }>;
 };
 
@@ -23,7 +24,11 @@ export const SideMenu: React.FC<{
               <li key={index}>
                 <NavLink
                   to={basePath + item.linkTo}
-                  activeClassName="is-active"
+                  activeClassName={
+                    item.isDanger
+                      ? 'has-background-danger has-text-white'
+                      : 'is-active'
+                  }
                 >
                   {item.title}
                 </NavLink>

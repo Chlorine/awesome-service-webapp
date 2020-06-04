@@ -38,7 +38,7 @@ declare type State = {
 
 declare type FormValues = {
   name: string;
-  description: string;
+  description?: string;
   placeName: string;
   placeAddress?: string;
   start: Date;
@@ -64,7 +64,6 @@ export default class EventsCreateNew extends React.Component<Props, State> {
       .trim(),
     description: yup
       .string()
-      .required()
       .max(512)
       .trim(),
     placeName: yup
@@ -142,7 +141,7 @@ export default class EventsCreateNew extends React.Component<Props, State> {
       .wrap(
         api.events.exec('createEvent', {
           name,
-          description: description,
+          description: description || '',
           place: {
             name: placeName,
             address: placeAddress || '',

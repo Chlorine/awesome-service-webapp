@@ -5,13 +5,14 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import { AppState } from '../../../store/state';
-import { Actions as CurrentSurveyActions } from '../../../actions/current-survey';
+import { Actions as CurrentQuestionActions } from '../../../actions/current-question';
 
 import api from '../../../back/server-api';
 
 import { UnmountHelper } from '../../../utils/unmount-helper';
+
+import { TextInputField, SubmitButton } from '../../Common/Forms';
 import { Alert } from '../../Common/Alert';
-import { SubmitButton, TextInputField } from '../../Common/Forms';
 
 import {
   VEFetchError,
@@ -21,13 +22,17 @@ import {
 
 const mapStateToProps = (state: AppState) => {
   return {
+    currentQuestion: state.currentQuestion,
     currentSurvey: state.currentSurvey,
   };
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
-    currentSurveyActions: bindActionCreators(CurrentSurveyActions, dispatch),
+    currentQuestionActions: bindActionCreators(
+      CurrentQuestionActions,
+      dispatch,
+    ),
   };
 };
 
@@ -43,11 +48,11 @@ declare type State = {
 };
 
 declare type FormValues = {
-  name: string;
+  text: string;
   description?: string;
 };
 
-class SurveyEdit extends React.Component<Props, State> {
+class QuestionEdit extends React.Component<Props, State> {
   uh = new UnmountHelper();
 
   state: State = {
@@ -59,7 +64,7 @@ class SurveyEdit extends React.Component<Props, State> {
   };
 
   schema = yup.object().shape<FormValues>({
-    name: yup
+    text: yup
       .string()
       .required()
       .max(255)
@@ -71,8 +76,9 @@ class SurveyEdit extends React.Component<Props, State> {
   });
 
   componentDidMount(): void {
-    document.title = 'Изменение параметров анкеты';
     this.uh.onMount();
+
+    document.title = 'Изменение параметров вопроса';
   }
 
   componentWillUnmount(): void {
@@ -82,8 +88,10 @@ class SurveyEdit extends React.Component<Props, State> {
   onSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
     values = this.schema.cast(values) as FormValues;
 
-    const { name, description } = values;
-    const { survey } = this.props.currentSurvey;
+    const { setSubmitting } = actions;
+    const { text, description } = values;
+
+    const question = this.props.currentQuestion.question!;
 
     this.setState({
       submitErrorMsg: '',
@@ -92,24 +100,26 @@ class SurveyEdit extends React.Component<Props, State> {
 
     this.uh
       .wrap(
-        api.events.exec('updateSurvey', {
-          id: survey!.id,
-          name,
-          description,
+        api.events.exec('updateSurveyQuestion', {
+          id: question.id,
+          text,
+          description: description,
+          answerType: 'YesNo',
           // dbg:
           __delay: 100,
           __genErr: false,
         }),
       )
       .then(({ err, results }) => {
-        actions.setSubmitting(false);
+        setSubmitting(false);
 
         if (err) {
           this.setState({ submitErrorMsg: err.message });
         } else {
-          const { survey } = results;
+          const { question } = results;
 
-          this.props.currentSurveyActions.infoLoaded(survey);
+          this.props.currentQuestionActions.infoLoaded(question);
+          document.title = question.text;
 
           this.setState({
             submitOkMsgVisible: true,
@@ -140,10 +150,10 @@ class SurveyEdit extends React.Component<Props, State> {
         {/* --- Название ----------------------------------------*/}
 
         <TextInputField
-          label="Название"
-          placeholder="Название анкеты"
+          label="Текст"
+          placeholder="Текст вопроса"
           fp={fp}
-          name="name"
+          name="text"
           maxLength={256}
           onChange={this.onFormValueChange}
         />
@@ -151,14 +161,14 @@ class SurveyEdit extends React.Component<Props, State> {
         {/* --- Описание ----------------------------------------*/}
 
         <TextInputField
-          label="Описание"
-          placeholder="Краткое описание"
+          label="Пояснение"
+          placeholder="Пояснение к вопросу"
           fp={fp}
           name="description"
           maxLength={513}
-          onChange={this.onFormValueChange}
           isTextarea={true}
           rows={3}
+          onChange={this.onFormValueChange}
         />
 
         {/* --- Сообщ. об успешном сохранении -----------------------------*/}
@@ -203,16 +213,16 @@ class SurveyEdit extends React.Component<Props, State> {
 
   get formInitialValues(): FormValues {
     const values: FormValues = {
-      name: '',
+      text: '',
       description: '',
     };
 
-    const { survey } = this.props.currentSurvey;
+    const { question } = this.props.currentQuestion;
 
-    if (survey) {
-      const { name, description } = survey;
+    if (question) {
+      const { text, description } = question;
 
-      values.name = name;
+      values.text = text;
       values.description = description;
     }
 
@@ -227,22 +237,21 @@ class SurveyEdit extends React.Component<Props, State> {
         <div className="columns">
           <div className="column is-10-tablet is-9-desktop is-8-widescreen is-6-fullhd">
             <div className="box">
-              <div className="container">
-                <VEFetchingSpinner isFetching={isFetching} />
-                <VEFetchError msg={fetchErrorMsg} />
-                {!isFetching && !fetchErrorMsg && (
-                  <>
-                    <VEPageSecondaryTitle title={'Параметры анкеты'} />
-                    <Formik
-                      initialValues={this.formInitialValues}
-                      validationSchema={this.schema}
-                      onSubmit={this.onSubmit}
-                    >
-                      {this.renderForm}
-                    </Formik>
-                  </>
-                )}
-              </div>
+              <VEFetchingSpinner isFetching={isFetching} />
+              <VEFetchError msg={fetchErrorMsg} />
+              {!isFetching && !fetchErrorMsg && (
+                <>
+                  <VEPageSecondaryTitle title="Параметры вопроса" />
+                  <Formik
+                    initialValues={this.formInitialValues}
+                    validationSchema={this.schema}
+                    onSubmit={this.onSubmit}
+                    enableReinitialize={true}
+                  >
+                    {this.renderForm}
+                  </Formik>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -251,4 +260,4 @@ class SurveyEdit extends React.Component<Props, State> {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SurveyEdit);
+export default connect(mapStateToProps, mapDispatchToProps)(QuestionEdit);

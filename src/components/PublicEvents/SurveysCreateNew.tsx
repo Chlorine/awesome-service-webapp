@@ -9,11 +9,7 @@ import { history } from '../../store';
 
 import { FormikPersist } from '../Common/FormikPersist';
 
-import {
-  FieldValidationStatus,
-  TextInputField,
-  SubmitButton,
-} from '../Common/Forms';
+import { TextInputField, SubmitButton } from '../Common/Forms';
 import { Alert } from '../Common/Alert';
 
 import {
@@ -21,9 +17,8 @@ import {
   VEFetchingSpinner,
   VEPageSecondaryTitle,
 } from '../Common/ViewElements';
-import { add, parseISO } from 'date-fns';
+
 import { isObject } from 'lodash';
-import DatePicker from 'react-datepicker';
 
 declare type Props = {};
 
