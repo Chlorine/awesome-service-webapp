@@ -25,8 +25,9 @@ import {
   VEPageSecondaryTitle,
 } from '../../Common/ViewElements';
 
+import { ANSWER_TYPE_NAMES } from './QuestionHelpers';
+
 import './SurveyQuestions.scss';
-import { ANSWER_TYPE_NAMES } from './SurveyQuestionsCreateNew';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -71,6 +72,7 @@ declare type QuestionSortableElementProps = {
   value: SurveyQuestionInfo;
   currIndex: number;
   isSavingDisplayOrder: boolean;
+  showDragHandle: boolean;
 };
 
 const QuestionSortableElement = SortableElement(
@@ -78,8 +80,9 @@ const QuestionSortableElement = SortableElement(
     value,
     currIndex,
     isSavingDisplayOrder,
+    showDragHandle,
   }: QuestionSortableElementProps) => {
-    const { id, text, description, answerType, displayOrder } = value;
+    const { id, text, description, answerType } = value;
 
     return (
       <li className="li-sortable li-survey-question">
@@ -103,13 +106,14 @@ const QuestionSortableElement = SortableElement(
                 <strong>Тип ответа: </strong>
                 {ANSWER_TYPE_NAMES[answerType]}
               </p>
-              {/*<p>*/}
-              {/*  <strong>displayOrder: </strong>#{displayOrder}*/}
-              {/*</p>*/}
             </div>
-            <div className="media-right">
-              <QuestionDragHandle isSavingDisplayOrder={isSavingDisplayOrder} />
-            </div>
+            {showDragHandle && (
+              <div className="media-right">
+                <QuestionDragHandle
+                  isSavingDisplayOrder={isSavingDisplayOrder}
+                />
+              </div>
+            )}
           </article>
         </div>
       </li>
@@ -133,6 +137,7 @@ const QuestionsSortableContainer = SortableContainer(
             value={q}
             currIndex={index}
             isSavingDisplayOrder={isSavingDisplayOrder}
+            showDragHandle={items.length > 1}
           />
         ))}
       </ul>

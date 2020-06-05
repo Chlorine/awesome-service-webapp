@@ -5,6 +5,7 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { add, parseISO } from 'date-fns';
 import DatePicker from 'react-datepicker';
+import { truncate } from 'lodash';
 
 import { AppState } from '../../../store/state';
 import { Actions as CurrentEventActions } from '../../../actions/current-event';
@@ -332,11 +333,8 @@ class EventEdit extends React.Component<Props, State> {
                 name="surveyId"
                 value={values.surveyId}
                 onChange={e => {
-                  this.setState({
-                    somethingChanged: true,
-                    submitOkMsgVisible: false,
-                  });
                   handleChange(e);
+                  this.onFormValueChange();
                 }}
                 onBlur={handleBlur}
                 disabled={isSubmitting}
@@ -344,7 +342,7 @@ class EventEdit extends React.Component<Props, State> {
                 <option value="">Без анкеты</option>
                 {surveys.map(s => (
                   <option key={s.id} value={s.id}>
-                    {s.name}
+                    {truncate(s.name, { length: 48 })}
                   </option>
                 ))}
               </select>
@@ -384,11 +382,25 @@ class EventEdit extends React.Component<Props, State> {
         {/* --- Сабмит ----------------------------------------*/}
 
         {somethingChanged && !submitOkMsgVisible && (
-          <div className="field">
-            <SubmitButton
-              text="Сохранить изменения"
-              isSubmitting={isSubmitting}
-            />
+          <div className="field is-grouped">
+            <p className="control">
+              <SubmitButton
+                text="Сохранить изменения"
+                isSubmitting={isSubmitting}
+              />
+            </p>
+            <p className="control">
+              <button
+                type="button"
+                className="button submit-button"
+                onClick={() => {
+                  fp.resetForm();
+                  this.setState({ somethingChanged: false });
+                }}
+              >
+                Отменить
+              </button>
+            </p>
           </div>
         )}
       </form>

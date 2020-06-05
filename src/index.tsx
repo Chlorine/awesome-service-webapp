@@ -40,6 +40,12 @@ Yup_setLocale({
     max: 'Значение должно быть меньше или равно ${max}',
     integer: 'Значение должно быть целым числом (integer)',
   },
+  array: {
+    // eslint-disable-next-line no-template-curly-in-string
+    max: 'Макс. количество элементов: ${max}',
+    // eslint-disable-next-line no-template-curly-in-string
+    min: 'Мин. количество элементов: ${min}',
+  },
 });
 
 // ReactDOM.render(

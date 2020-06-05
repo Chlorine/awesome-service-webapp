@@ -88,3 +88,11 @@ export const VEDescriptionAsSubtitle: React.FC<{
     </p>
   );
 };
+
+export const VELinkButton: React.FC<{ text: string; onClick: () => void }> = ({
+  text,
+  onClick,
+}) => {
+  // eslint-disable-next-line jsx-a11y/anchor-is-valid
+  return <a onClick={onClick}>{text}</a>;
+};

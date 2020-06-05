@@ -406,11 +406,25 @@ export default class Personal extends React.Component<Props, State> {
         {/* --- Сабмит ----------------------------------------*/}
 
         {somethingChanged && !submitOkMsgVisible && (
-          <div className="field">
-            <SubmitButton
-              text="Сохранить изменения"
-              isSubmitting={isSubmitting}
-            />
+          <div className="field is-grouped">
+            <p className="control">
+              <SubmitButton
+                text="Сохранить изменения"
+                isSubmitting={isSubmitting}
+              />
+            </p>
+            <p className="control">
+              <button
+                type="button"
+                className="button submit-button"
+                onClick={() => {
+                  fp.resetForm();
+                  this.setState({ somethingChanged: false });
+                }}
+              >
+                Отменить
+              </button>
+            </p>
           </div>
         )}
       </form>

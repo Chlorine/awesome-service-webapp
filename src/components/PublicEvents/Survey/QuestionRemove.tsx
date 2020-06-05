@@ -156,7 +156,7 @@ class QuestionRemove extends React.Component<Props, State> {
           <div className="field">
             <button
               type="button"
-              className="button is-warning"
+              className="button submit-button is-warning"
               disabled={isSubmitting}
               onClick={() => this.setState({ dangerActionVisible: true })}
             >
@@ -170,7 +170,7 @@ class QuestionRemove extends React.Component<Props, State> {
             <p className="control">
               <button
                 type="button"
-                className="button"
+                className="button submit-button"
                 disabled={isSubmitting}
                 onClick={() => this.setState({ dangerActionVisible: false })}
               >

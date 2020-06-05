@@ -171,9 +171,12 @@ export const SubmitButton: React.FC<{
   return (
     <button
       type="submit"
-      className={classNames(`button ${buttonClass || 'is-primary'}`, {
-        'is-loading': isSubmitting,
-      })}
+      className={classNames(
+        `button submit-button ${buttonClass || 'is-primary'}`,
+        {
+          'is-loading': isSubmitting,
+        },
+      )}
       disabled={isSubmitting}
     >
       {text}
@@ -197,7 +200,7 @@ export function FieldValidationStatus<Values, FieldName extends keyof Values>({
 }: FieldValidationStatusProps<Values, FieldName>) {
   const { touched, errors } = fp;
 
-  return touched[name] && errors[name] ? (
+  return touched[name] && errors[name] && typeof errors[name] === 'string' ? (
     <p className="help">
       {title && (
         <strong className="has-text-grey">

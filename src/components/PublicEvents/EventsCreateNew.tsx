@@ -3,7 +3,7 @@ import * as yup from 'yup';
 import { Formik, FormikProps, FormikHelpers } from 'formik';
 
 import { add, isBefore, parseISO, startOfDay } from 'date-fns';
-import { isObject } from 'lodash';
+import { isObject, truncate } from 'lodash';
 import DatePicker from 'react-datepicker';
 
 import api from '../../back/server-api';
@@ -300,7 +300,7 @@ export default class EventsCreateNew extends React.Component<Props, State> {
                 <option value="">Без анкеты</option>
                 {surveys.map(s => (
                   <option key={s.id} value={s.id}>
-                    {s.name}
+                    {truncate(s.name, { length: 48 })}
                   </option>
                 ))}
               </select>

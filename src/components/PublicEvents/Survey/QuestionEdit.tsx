@@ -1,6 +1,11 @@
 import React from 'react';
-import * as yup from 'yup';
-import { Formik, FormikProps, FormikHelpers } from 'formik';
+import {
+  Formik,
+  FormikProps,
+  FormikHelpers,
+  FieldArray as FormikFieldArray,
+} from 'formik';
+import arrayMove from 'array-move';
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
@@ -11,14 +16,28 @@ import api from '../../../back/server-api';
 
 import { UnmountHelper } from '../../../utils/unmount-helper';
 
-import { TextInputField, SubmitButton } from '../../Common/Forms';
+import {
+  TextInputField,
+  SubmitButton,
+  FieldValidationStatus,
+} from '../../Common/Forms';
 import { Alert } from '../../Common/Alert';
 
 import {
   VEFetchError,
   VEFetchingSpinner,
+  VELinkButton,
   VEPageSecondaryTitle,
 } from '../../Common/ViewElements';
+
+import {
+  ANSWER_TYPE_NAMES,
+  makeNewAnswerVariant,
+  QuestionFormValues,
+  makeSchema,
+  AnswersSortableContainer,
+} from './QuestionHelpers';
+import { SurveyQuestionInfo } from '../../../back/common/public-events/survey-question';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -47,10 +66,7 @@ declare type State = {
   somethingChanged: boolean;
 };
 
-declare type FormValues = {
-  text: string;
-  description?: string;
-};
+type FormValues = QuestionFormValues;
 
 class QuestionEdit extends React.Component<Props, State> {
   uh = new UnmountHelper();
@@ -63,17 +79,7 @@ class QuestionEdit extends React.Component<Props, State> {
     somethingChanged: false,
   };
 
-  schema = yup.object().shape<FormValues>({
-    text: yup
-      .string()
-      .required()
-      .max(255)
-      .trim(),
-    description: yup
-      .string()
-      .max(512)
-      .trim(),
-  });
+  schema = makeSchema();
 
   componentDidMount(): void {
     this.uh.onMount();
@@ -89,7 +95,7 @@ class QuestionEdit extends React.Component<Props, State> {
     values = this.schema.cast(values) as FormValues;
 
     const { setSubmitting } = actions;
-    const { text, description } = values;
+    const { text, description, answerType, answers } = values;
 
     const question = this.props.currentQuestion.question!;
 
@@ -104,7 +110,9 @@ class QuestionEdit extends React.Component<Props, State> {
           id: question.id,
           text,
           description: description,
-          answerType: 'YesNo',
+          answerType,
+          answerVariants:
+            answerType !== 'YesNo' ? answers.map(a => a.text) : undefined,
           // dbg:
           __delay: 100,
           __genErr: false,
@@ -142,7 +150,7 @@ class QuestionEdit extends React.Component<Props, State> {
   };
 
   renderForm = (fp: FormikProps<FormValues>) => {
-    const { handleSubmit, isSubmitting } = fp;
+    const { handleSubmit, isSubmitting, values, handleChange, handleBlur } = fp;
     const { submitErrorMsg, submitOkMsgVisible, somethingChanged } = this.state;
 
     return (
@@ -170,6 +178,85 @@ class QuestionEdit extends React.Component<Props, State> {
           rows={3}
           onChange={this.onFormValueChange}
         />
+
+        {/* --- Тип ответа ------------------------- */}
+
+        <div className="field">
+          <label htmlFor="" className="label">
+            Тип ответа
+          </label>
+          <div className="control">
+            <div className="select">
+              <select
+                name="answerType"
+                value={values.answerType}
+                onChange={e => {
+                  handleChange(e);
+                  this.onFormValueChange();
+                }}
+                onBlur={handleBlur}
+                disabled={isSubmitting}
+              >
+                {Object.keys(ANSWER_TYPE_NAMES).map((key, index) => {
+                  const answerType = key as SurveyQuestionInfo['answerType'];
+                  return (
+                    <option key={index} value={answerType}>
+                      {ANSWER_TYPE_NAMES[answerType]}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* --- Варианты ответов -------------------------*/}
+
+        {values.answerType !== 'YesNo' && (
+          <div className="field">
+            <FormikFieldArray
+              name="answers"
+              render={arrayHelpers => {
+                return (
+                  <>
+                    <div className="field">
+                      <div className="columns is-gapless is-mobile">
+                        <div className="column label">Варианты ответов</div>
+                        <div className="column has-text-right">
+                          <VELinkButton
+                            text="Добавить"
+                            onClick={() => {
+                              arrayHelpers.push(makeNewAnswerVariant());
+                              this.onFormValueChange();
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <AnswersSortableContainer
+                      answers={values.answers}
+                      arrayHelpers={arrayHelpers}
+                      lockAxis={'y'}
+                      shouldCancelStart={() => isSubmitting}
+                      useDragHandle={true}
+                      onSortEnd={({ newIndex, oldIndex }) => {
+                        if (oldIndex !== newIndex) {
+                          fp.setFieldValue(
+                            'answers',
+                            arrayMove(values.answers, oldIndex, newIndex),
+                          );
+                          this.onFormValueChange();
+                        }
+                      }}
+                      onChange={this.onFormValueChange}
+                    />
+                  </>
+                );
+              }}
+            />
+            <FieldValidationStatus fp={fp} name="answers" />
+          </div>
+        )}
 
         {/* --- Сообщ. об успешном сохранении -----------------------------*/}
 
@@ -200,11 +287,25 @@ class QuestionEdit extends React.Component<Props, State> {
         {/* --- Сабмит ----------------------------------------*/}
 
         {somethingChanged && !submitOkMsgVisible && (
-          <div className="field">
-            <SubmitButton
-              text="Сохранить изменения"
-              isSubmitting={isSubmitting}
-            />
+          <div className="field is-grouped">
+            <p className="control">
+              <SubmitButton
+                text="Сохранить изменения"
+                isSubmitting={isSubmitting}
+              />
+            </p>
+            <p className="control">
+              <button
+                type="button"
+                className="button submit-button"
+                onClick={() => {
+                  fp.resetForm();
+                  this.setState({ somethingChanged: false });
+                }}
+              >
+                Отменить
+              </button>
+            </p>
           </div>
         )}
       </form>
@@ -215,15 +316,19 @@ class QuestionEdit extends React.Component<Props, State> {
     const values: FormValues = {
       text: '',
       description: '',
+      answerType: 'YesNo',
+      answers: [],
     };
 
     const { question } = this.props.currentQuestion;
 
     if (question) {
-      const { text, description } = question;
+      const { text, description, answerType, answerVariants } = question;
 
       values.text = text;
       values.description = description;
+      values.answerType = answerType;
+      values.answers = answerVariants.map(av => ({ text: av }));
     }
 
     return values;

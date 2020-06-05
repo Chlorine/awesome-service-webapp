@@ -1,6 +1,13 @@
 import React from 'react';
-import * as yup from 'yup';
-import { Formik, FormikProps, FormikHelpers, FieldArray } from 'formik';
+
+import {
+  Formik,
+  FormikProps,
+  FormikHelpers,
+  FieldArray as FormikFieldArray,
+} from 'formik';
+
+import arrayMove from 'array-move';
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
@@ -11,20 +18,33 @@ import api from '../../../back/server-api';
 
 import { UnmountHelper } from '../../../utils/unmount-helper';
 import { history } from '../../../store';
-
 import { FormikPersist } from '../../Common/FormikPersist';
 
-import { TextInputField, SubmitButton } from '../../Common/Forms';
+import {
+  TextInputField,
+  SubmitButton,
+  FieldValidationStatus,
+} from '../../Common/Forms';
+
 import { Alert } from '../../Common/Alert';
 
 import {
   VEFetchError,
   VEFetchingSpinner,
+  VELinkButton,
   VEPageSecondaryTitle,
 } from '../../Common/ViewElements';
 
 import { isObject } from 'lodash';
 import { SurveyQuestionInfo } from '../../../back/common/public-events/survey-question';
+
+import {
+  ANSWER_TYPE_NAMES,
+  makeNewAnswerVariant,
+  AnswersSortableContainer,
+  QuestionFormValues,
+  makeSchema,
+} from './QuestionHelpers';
 
 const mapStateToProps = (state: AppState) => {
   return {
@@ -47,68 +67,7 @@ declare type State = {
   submitErrorMsg: string;
 };
 
-declare type AnswerVariantInfo = {
-  text: string;
-  dummy?: string;
-};
-
-// declare type FormValues = {
-//   text: string;
-//   description?: string;
-//   answerType: SurveyQuestionInfo['answerType'];
-//   answers: AnswerVariantInfo[];
-// };
-
-export const VALID_ANSWER_TYPES: SurveyQuestionInfo['answerType'][] = [
-  'YesNo',
-  'OneOf',
-  'SomeOf',
-];
-
-export const ANSWER_TYPE_NAMES: {
-  [id in SurveyQuestionInfo['answerType']]: string;
-} = {
-  YesNo: 'Да или Нет',
-  OneOf: 'Один вариант из списка',
-  SomeOf: 'Несколько вариантов из списка',
-};
-
-const _schema = yup
-  .object()
-  .shape({
-    text: yup
-      .string()
-      .required()
-      .max(255)
-      .trim(),
-    description: yup
-      .string()
-      .max(512)
-      .trim(),
-    answerType: yup
-      .mixed()
-      .required()
-      .oneOf(VALID_ANSWER_TYPES),
-    answers: yup
-      .array()
-      .of(
-        yup
-          .object()
-          .shape({
-            text: yup
-              .string()
-              .required()
-              .max(255)
-              .trim(),
-            dummy: yup.string().max(255),
-          })
-          .defined(),
-      )
-      .defined(),
-  })
-  .defined();
-
-type FormValues = yup.InferType<typeof _schema>;
+type FormValues = QuestionFormValues;
 
 class SurveysCreateNew extends React.Component<Props, State> {
   uh = new UnmountHelper();
@@ -119,35 +78,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
     submitErrorMsg: '',
   };
 
-  schema = _schema;
-  // schema = yup.object().shape<FormValues>({
-  //   text: yup
-  //     .string()
-  //     .required()
-  //     .max(255)
-  //     .trim(),
-  //   description: yup
-  //     .string()
-  //     .max(512)
-  //     .trim(),
-  //   answerType: yup
-  //     .string()
-  //     .required()
-  //     .oneOf(VALID_ANSWER_TYPES),
-  //   answers: yup
-  //     .array()
-  //     .of(
-  //       yup.object().shape<AnswerVariantInfo>({
-  //         text: yup
-  //           .string()
-  //           .required()
-  //           .max(255)
-  //           .trim(),
-  //         dummy: yup.string().max(255),
-  //       }),
-  //     )
-  //     .required(),
-  // });
+  schema = makeSchema();
 
   componentDidMount(): void {
     this.uh.onMount();
@@ -161,6 +92,8 @@ class SurveysCreateNew extends React.Component<Props, State> {
 
   onSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
     values = this.schema.cast(values) as FormValues;
+
+    console.log('submit', JSON.stringify(values, null, 2));
 
     const { setSubmitting, resetForm } = actions;
     const { text, description, answerType, answers } = values;
@@ -181,7 +114,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
           answerVariants:
             answerType !== 'YesNo' ? answers.map(a => a.text) : undefined,
           // dbg:
-          __delay: 100,
+          __delay: 0,
           __genErr: false,
         }),
       )
@@ -196,6 +129,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
           this.props.currentSurveyActions.questionCreated(question);
 
           resetForm({});
+
           history.push(`/public-event-survey/${survey.id}/questions`);
         }
       });
@@ -259,26 +193,48 @@ class SurveysCreateNew extends React.Component<Props, State> {
 
         {/* --- Варианты ответов -------------------------*/}
 
-        <div className="field">
-          <label htmlFor="" className="label has-text-grey-light">
-            Варианты ответов
-          </label>
-          <FieldArray
-            name="answers"
-            render={props => {
-              return (
-                <ul className="list">
-                  <li className="list-item has-text-grey-light">
-                    В разработке{' '}
-                    <span className="icon">
-                      <i className="fa fa-meh-o" />
-                    </span>
-                  </li>
-                </ul>
-              );
-            }}
-          />
-        </div>
+        {values.answerType !== 'YesNo' && (
+          <div className="field">
+            <FormikFieldArray
+              name="answers"
+              render={arrayHelpers => {
+                return (
+                  <>
+                    <div className="field">
+                      <div className="columns is-gapless is-mobile">
+                        <div className="column label">Варианты ответов</div>
+                        <div className="column has-text-right">
+                          <VELinkButton
+                            text="Добавить"
+                            onClick={() =>
+                              arrayHelpers.push(makeNewAnswerVariant())
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <AnswersSortableContainer
+                      answers={values.answers}
+                      arrayHelpers={arrayHelpers}
+                      lockAxis={'y'}
+                      shouldCancelStart={() => isSubmitting}
+                      useDragHandle={true}
+                      onSortEnd={({ newIndex, oldIndex }) => {
+                        if (oldIndex !== newIndex) {
+                          fp.setFieldValue(
+                            'answers',
+                            arrayMove(values.answers, oldIndex, newIndex),
+                          );
+                        }
+                      }}
+                    />
+                  </>
+                );
+              }}
+            />
+            <FieldValidationStatus fp={fp} name="answers" />
+          </div>
+        )}
 
         {/* --- Ошибка создания ----------------------------------------*/}
 
@@ -295,12 +251,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
 
         {/* --- Сабмит ----------------------------------------*/}
 
-        {/*<div className="field">{JSON.stringify(fp.values)}</div>*/}
-
-        {/*<div className="field">{JSON.stringify(fp.errors)}</div>*/}
-
         <div className="field">
-          <br />
           <SubmitButton text="Создать вопрос" isSubmitting={isSubmitting} />
         </div>
         <FormikPersist
@@ -327,7 +278,6 @@ class SurveysCreateNew extends React.Component<Props, State> {
       return {
         ...this.formInitialValues,
         ...maybeValues,
-        // answers: []
       };
     }
 
@@ -339,7 +289,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
       text: '',
       description: '',
       answerType: 'YesNo',
-      answers: [{ text: 'test', dummy: '' }],
+      answers: [],
     };
   }
 
