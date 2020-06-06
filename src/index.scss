@@ -19,11 +19,6 @@ $menu-item-active-background-color: rgba(24, 121, 107, 0.67);
 $loader-color: $grey-lightest;
 @import "scss/loaders";
 
-.fast-spin {
-  -webkit-animation: fa-spin 0.5s infinite linear;
-  animation: fa-spin 0.5s infinite linear;
-}
-
 // для sticky footer
 
 #root {

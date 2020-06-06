@@ -70,6 +70,7 @@ declare type State = {
 type FormValues = QuestionFormValues;
 
 class SurveysCreateNew extends React.Component<Props, State> {
+  firstFieldRef = React.createRef<any>();
   uh = new UnmountHelper();
 
   state: State = {
@@ -84,6 +85,8 @@ class SurveysCreateNew extends React.Component<Props, State> {
     this.uh.onMount();
 
     document.title = 'Новый вопрос';
+
+    this.firstFieldRef.current && this.firstFieldRef.current.focus();
   }
 
   componentWillUnmount(): void {
@@ -149,6 +152,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
           fp={fp}
           name="text"
           maxLength={256}
+          innerRef={this.firstFieldRef}
         />
 
         {/* --- Описание ----------------------------------------*/}

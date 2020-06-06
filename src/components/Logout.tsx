@@ -47,22 +47,14 @@ class Logout extends React.Component<Props, State> {
     const { isWorking } = this.state;
 
     return (
-      <section className="hero is-white is-fullheight">
+      <section className="hero is-white is-fullheight-with-navbar">
         <div className="hero-body">
           <div className="container">
-            <div className="columns is-centered">
-              <div className="column is-6-tablet is-5-desktop is-4-widescreen">
-                <h3 className="title has-text-grey1">Выход из системы</h3>
-                {isWorking && (
-                  <p className="has-text-grey">
-                    <span className="icon">
-                      <i className="fa fa-circle-o-notch fast-spin" />
-                    </span>{' '}
-                    Пожалуйста, подождите...
-                  </p>
-                )}
+            {isWorking && (
+              <div className="large-loader-wrapper is-active">
+                <div className="loader is-loading" />
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>

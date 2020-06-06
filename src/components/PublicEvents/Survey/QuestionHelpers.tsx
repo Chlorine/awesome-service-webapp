@@ -76,7 +76,7 @@ export const AnswerSortableElement = SortableElement(
                   />
                   <button
                     type="button"
-                    className="delete delete-answer"
+                    className="delete delete-answer has-background-warning"
                     disabled={form.isSubmitting}
                     onClick={() => {
                       arrayHelpers.remove(currIndex);
@@ -106,7 +106,7 @@ export type AnswersSortableContainerProps = {
 export const AnswersSortableContainer = SortableContainer(
   ({ answers, arrayHelpers, onChange }: AnswersSortableContainerProps) => {
     return (
-      <ul className="list" style={{ marginBottom: '0.5rem' }}>
+      <ul className="list list-answers">
         {answers.length === 0 && (
           <li className="list-item has-text-grey-lighter">Добавьте варианты</li>
         )}

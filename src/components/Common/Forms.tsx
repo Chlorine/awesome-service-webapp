@@ -191,17 +191,19 @@ export type FieldValidationStatusProps<
   fp: FormikProps<Values>;
   name: FieldName;
   title?: string;
+  clsNames?: string;
 };
 
 export function FieldValidationStatus<Values, FieldName extends keyof Values>({
   name,
   fp,
   title,
+  clsNames,
 }: FieldValidationStatusProps<Values, FieldName>) {
   const { touched, errors } = fp;
 
   return touched[name] && errors[name] && typeof errors[name] === 'string' ? (
-    <p className="help">
+    <p className={'help ' + (clsNames || '')}>
       {title && (
         <strong className="has-text-grey">
           {title}

@@ -48,6 +48,7 @@ declare type FormValues = {
 
 export default class EventsCreateNew extends React.Component<Props, State> {
   uh = new UnmountHelper();
+  firstFieldRef = React.createRef<any>();
 
   state: State = {
     isFetching: true,
@@ -103,14 +104,15 @@ export default class EventsCreateNew extends React.Component<Props, State> {
     this.uh
       .wrap(api.events.exec('getSurveys', { __delay: 0, __genErr: false }))
       .then(({ err, results }) => {
+        this.setState({ isFetching: false });
+
         if (err) {
           this.setState({ fetchErrorMsg: err.message });
         } else {
           const { surveys } = results;
           this.setState({ surveys });
+          this.firstFieldRef.current && this.firstFieldRef.current.focus();
         }
-
-        this.setState({ isFetching: false });
       });
   }
 
@@ -190,6 +192,7 @@ export default class EventsCreateNew extends React.Component<Props, State> {
           fp={fp}
           name="name"
           maxLength={256}
+          innerRef={this.firstFieldRef}
         />
 
         {/* --- Описание ----------------------------------------*/}

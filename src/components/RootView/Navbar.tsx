@@ -210,6 +210,14 @@ const NavbarEnd: React.FC<{
           </a>
           {ddAvailable && (
             <div className="navbar-dropdown is-right">
+              <div className="navbar-item">
+                <p className="is-size-7">
+                  <strong>Выполнен вход</strong>
+                  <br />
+                  {auth.user?.email}
+                </p>
+              </div>
+              <hr className="navbar-divider" />
               <Link
                 className="navbar-item"
                 to={'/profile'}

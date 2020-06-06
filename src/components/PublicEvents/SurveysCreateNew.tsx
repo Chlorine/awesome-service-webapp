@@ -35,6 +35,7 @@ declare type FormValues = {
 
 export default class SurveysCreateNew extends React.Component<Props, State> {
   uh = new UnmountHelper();
+  firstFieldRef = React.createRef<any>();
 
   state: State = {
     isFetching: false,
@@ -58,6 +59,8 @@ export default class SurveysCreateNew extends React.Component<Props, State> {
     this.uh.onMount();
 
     document.title = 'Новая анкета';
+
+    this.firstFieldRef.current && this.firstFieldRef.current.focus();
   }
 
   componentWillUnmount(): void {
@@ -113,6 +116,7 @@ export default class SurveysCreateNew extends React.Component<Props, State> {
           fp={fp}
           name="name"
           maxLength={256}
+          innerRef={this.firstFieldRef}
         />
 
         {/* --- Описание ----------------------------------------*/}

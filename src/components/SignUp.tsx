@@ -58,6 +58,8 @@ declare type State = {
 };
 
 class SignUp extends React.Component<Props, State> {
+  firstFieldRef = React.createRef<any>();
+
   state: State = {
     email: '',
     errorMsg: '',
@@ -113,6 +115,8 @@ class SignUp extends React.Component<Props, State> {
 
   componentDidMount(): void {
     document.title = 'Регистрация';
+
+    this.firstFieldRef.current && this.firstFieldRef.current.focus();
   }
 
   onSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
@@ -166,6 +170,7 @@ class SignUp extends React.Component<Props, State> {
           fp={fp}
           name={'firstName'}
           maxLength={65}
+          innerRef={this.firstFieldRef}
         />
 
         {/* --- Отчество ------------------------------ */}

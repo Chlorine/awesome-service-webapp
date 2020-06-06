@@ -20,6 +20,8 @@ declare type FormValues = {
 };
 
 export default class Password extends React.Component<Props, State> {
+  oldPswRef = React.createRef<any>();
+
   state: State = {
     submitErrorMsg: '',
     submitOkMsgVisible: false,
@@ -42,6 +44,8 @@ export default class Password extends React.Component<Props, State> {
 
   componentDidMount(): void {
     document.title = 'Пароль';
+
+    this.oldPswRef.current && this.oldPswRef.current.focus();
   }
 
   onSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
@@ -87,6 +91,7 @@ export default class Password extends React.Component<Props, State> {
           enableEyeButton={true}
           enableStrengthMeter={false}
           maxLength={101}
+          innerRef={this.oldPswRef}
         />
 
         {/* --- Новый пароль ------------------------------- */}

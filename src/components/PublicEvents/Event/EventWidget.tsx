@@ -71,10 +71,9 @@ class EventWidget extends React.Component<Props, State> {
                   </h3>
                   <div className="field">
                     <textarea
-                      className="textarea is-family-monospace"
+                      className="textarea is-family-monospace is-size-7"
                       readOnly
                       value={fragment}
-                      style={{ fontSize: '0.75rem' }}
                       rows={15}
                     />
                   </div>

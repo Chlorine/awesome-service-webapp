@@ -18,6 +18,8 @@ import {
 
 import { Alert } from '../Common/Alert';
 
+import './Personal.scss';
+
 declare type Props = {};
 
 declare type State = {
@@ -40,6 +42,7 @@ declare type FormValues = {
   middleName?: string;
   lastName: string;
   withBirthday?: boolean;
+  gender?: 'male' | 'female';
 } & BirthdayValues;
 
 const _BD_YEAR = {
@@ -101,6 +104,10 @@ export default class Personal extends React.Component<Props, State> {
       .required()
       .max(_BD_YEAR.max)
       .min(_BD_YEAR.min),
+    gender: yup
+      .mixed()
+      .optional()
+      .oneOf(['male', 'female']),
   });
 
   componentDidMount(): void {
@@ -130,7 +137,7 @@ export default class Personal extends React.Component<Props, State> {
   onSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
     values = this.schema.cast(values) as FormValues;
 
-    const { firstName, middleName, lastName, withBirthday } = values;
+    const { firstName, middleName, lastName, withBirthday, gender } = values;
 
     this.setState({
       submitErrorMsg: '',
@@ -141,6 +148,7 @@ export default class Personal extends React.Component<Props, State> {
       firstName,
       middleName,
       lastName,
+      gender,
     };
 
     if (withBirthday) {
@@ -154,7 +162,7 @@ export default class Personal extends React.Component<Props, State> {
       .wrap(
         api.users.exec('updateProfile', {
           ...params,
-          __delay: 200,
+          __delay: 100,
           __genErr: false,
         }),
       )
@@ -280,14 +288,11 @@ export default class Personal extends React.Component<Props, State> {
 
         {withBirthday && (
           <>
-            <div
-              className="columns is-gapless is-mobile"
-              style={{ marginBottom: '0.5rem' }}
-            >
+            <div className="columns is-gapless is-mobile bd-header-columns">
               <div className="column label">День рождения</div>
               <div className="column has-text-right">
                 <button
-                  className="delete"
+                  className="delete has-background-warning"
                   onClick={() => {
                     setFieldValue('withBirthday', false);
                     const defaultBD = this.userBirthday;
@@ -300,7 +305,7 @@ export default class Personal extends React.Component<Props, State> {
               </div>
             </div>
             <div className="field">
-              <div className="columns is-mobile">
+              <div className="columns is-mobile bd-columns">
                 <div className="column is-3">
                   <div className="control">
                     <input
@@ -369,13 +374,72 @@ export default class Personal extends React.Component<Props, State> {
                   </div>
                 </div>
               </div>
-              <div style={{ marginTop: '-1.25rem', marginBottom: '1.25rem' }}>
-                <FieldValidationStatus fp={fp} name={'bdDay'} title="День" />
-                <FieldValidationStatus fp={fp} name={'bdYear'} title="Год" />
+              <div className="container">
+                <FieldValidationStatus
+                  fp={fp}
+                  name={'bdDay'}
+                  title="День"
+                  clsNames="bd-validation-status"
+                />
+                <FieldValidationStatus
+                  fp={fp}
+                  name={'bdYear'}
+                  title="Год"
+                  clsNames="bd-validation-status"
+                />
               </div>
             </div>
           </>
         )}
+
+        {/* --- Пол ------------------ */}
+
+        <div className="field">
+          <label className="label">Пол</label>
+          <div className="control">
+            <label className="radio">
+              <input
+                type="radio"
+                name="gender"
+                checked={!values.gender}
+                disabled={isSubmitting}
+                onChange={() => {
+                  setFieldValue('gender', undefined);
+                  this.onFormValueChange();
+                }}
+              />{' '}
+              Не указан
+            </label>
+            <label className="radio has-text-grey-light---">
+              <input
+                type="radio"
+                name="gender"
+                value="male"
+                checked={values.gender === 'male'}
+                disabled={isSubmitting}
+                onChange={() => {
+                  setFieldValue('gender', 'male');
+                  this.onFormValueChange();
+                }}
+              />{' '}
+              Мужчина
+            </label>
+            <label className="radio has-text-grey-light---">
+              <input
+                type="radio"
+                name="gender"
+                value="female"
+                checked={values.gender === 'female'}
+                disabled={isSubmitting}
+                onChange={() => {
+                  setFieldValue('gender', 'female');
+                  this.onFormValueChange();
+                }}
+              />{' '}
+              Женщина
+            </label>
+          </div>
+        </div>
 
         {/* --- Ошибка сохранения ----------------------------------------*/}
 
@@ -403,6 +467,10 @@ export default class Personal extends React.Component<Props, State> {
           </div>
         )}
 
+        {/*<div className="field">*/}
+        {/*  <pre className="is-size-7">{JSON.stringify(values, null, 2)}</pre>*/}
+        {/*</div>*/}
+
         {/* --- Сабмит ----------------------------------------*/}
 
         {somethingChanged && !submitOkMsgVisible && (
@@ -417,9 +485,13 @@ export default class Personal extends React.Component<Props, State> {
               <button
                 type="button"
                 className="button submit-button"
+                disabled={isSubmitting}
                 onClick={() => {
                   fp.resetForm();
-                  this.setState({ somethingChanged: false });
+                  this.setState({
+                    somethingChanged: false,
+                    submitErrorMsg: '',
+                  });
                 }}
               >
                 Отменить
@@ -440,16 +512,18 @@ export default class Personal extends React.Component<Props, State> {
       bdMonth: 0,
       bdYear: 1970,
       withBirthday: false,
+      gender: undefined,
     };
 
     const { userInfo } = this.state;
 
     if (userInfo) {
-      const { firstName, middleName, lastName, birthday } = userInfo;
+      const { firstName, middleName, lastName, birthday, gender } = userInfo;
 
       values.firstName = firstName;
       values.middleName = middleName;
       values.lastName = lastName;
+      values.gender = gender || undefined;
 
       values = { ...values, ...this.userBirthday, withBirthday: !!birthday };
     }

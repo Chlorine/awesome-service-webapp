@@ -201,9 +201,13 @@ class SurveyEdit extends React.Component<Props, State> {
               <button
                 type="button"
                 className="button submit-button"
+                disabled={isSubmitting}
                 onClick={() => {
                   fp.resetForm();
-                  this.setState({ somethingChanged: false });
+                  this.setState({
+                    somethingChanged: false,
+                    submitErrorMsg: '',
+                  });
                 }}
               >
                 Отменить
