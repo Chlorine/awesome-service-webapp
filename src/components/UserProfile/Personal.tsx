@@ -19,6 +19,7 @@ import {
 import { Alert } from '../Common/Alert';
 
 import './Personal.scss';
+import { VEPageSecondaryTitle } from '../Common/ViewElements';
 
 declare type Props = {};
 
@@ -410,7 +411,7 @@ export default class Personal extends React.Component<Props, State> {
               />{' '}
               Не указан
             </label>
-            <label className="radio has-text-grey-light---">
+            <label className="radio">
               <input
                 type="radio"
                 name="gender"
@@ -422,9 +423,9 @@ export default class Personal extends React.Component<Props, State> {
                   this.onFormValueChange();
                 }}
               />{' '}
-              Мужчина
+              Мужской
             </label>
-            <label className="radio has-text-grey-light---">
+            <label className="radio">
               <input
                 type="radio"
                 name="gender"
@@ -436,7 +437,7 @@ export default class Personal extends React.Component<Props, State> {
                   this.onFormValueChange();
                 }}
               />{' '}
-              Женщина
+              Женский
             </label>
           </div>
         </div>
@@ -562,6 +563,7 @@ export default class Personal extends React.Component<Props, State> {
             <div className="columns">
               <div className="column is-10-tablet is-7-desktop is-6-widescreen is-5-fullhd">
                 <div className="box">
+                  <VEPageSecondaryTitle title="Данные пользователя" />
                   <Formik
                     initialValues={this.formInitialValues}
                     enableReinitialize={true}

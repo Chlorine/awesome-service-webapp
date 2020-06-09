@@ -82,6 +82,12 @@ export default class Surveys extends React.Component<Props, State> {
             )}
             {surveys.length > 0 && (
               <div className="column is-12">
+                {/*<p className="control has-icons-left">*/}
+                {/*  <input className="input" type="text" placeholder="Search" />*/}
+                {/*  <span className="icon is-left">*/}
+                {/*    <i className="fa fa-search" aria-hidden="true"></i>*/}
+                {/*  </span>*/}
+                {/*</p>*/}
                 {surveys.map(survey => (
                   <div key={survey.id} className="box">
                     <div className="media">

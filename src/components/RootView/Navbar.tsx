@@ -211,7 +211,7 @@ const NavbarEnd: React.FC<{
           {ddAvailable && (
             <div className="navbar-dropdown is-right">
               <div className="navbar-item">
-                <p className="is-size-7">
+                <p className="is-size-7 has-text-grey-light">
                   <strong>Выполнен вход</strong>
                   <br />
                   {auth.user?.email}

@@ -6,6 +6,7 @@ import api from '../../back/server-api';
 
 import { PasswordInputField, SubmitButton } from '../Common/Forms';
 import { Alert } from '../Common/Alert';
+import { VEPageSecondaryTitle } from '../Common/ViewElements';
 
 declare type Props = {};
 
@@ -136,7 +137,7 @@ export default class Password extends React.Component<Props, State> {
         {/* --- Сабмит ----------------------------------------*/}
 
         <div className="field">
-          <SubmitButton text="Изменить пароль" isSubmitting={isSubmitting} />
+          <SubmitButton text="Изменить" isSubmitting={isSubmitting} />
         </div>
       </form>
     );
@@ -155,6 +156,7 @@ export default class Password extends React.Component<Props, State> {
         <div className="columns">
           <div className="column is-8-tablet is-6-desktop is-5-widescreen is-4-fullhd">
             <div className="box">
+              <VEPageSecondaryTitle title="Изменение пароля" />
               <Formik
                 initialValues={this.formInitialValues}
                 validationSchema={this.schema}
