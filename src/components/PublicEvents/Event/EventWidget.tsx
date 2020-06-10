@@ -24,11 +24,25 @@ declare type Props = ReturnType<typeof mapStateToProps> &
 declare type State = {
   isFetching: boolean;
   errorMsg: string;
-  fragment: string | null;
+  fragments: string[] | null;
   widgetUrlBase: string;
   copied: boolean;
   widgetModalVisible: boolean;
   widgetSrc: string;
+  variant: 'button' | 'triggers' | 'embed';
+};
+
+const _v2idx = (variant: State['variant']): number => {
+  switch (variant) {
+    case 'button':
+      return 0;
+    case 'triggers':
+      return 1;
+    case 'embed':
+      return 2;
+  }
+
+  return 0;
 };
 
 class EventWidget extends React.Component<Props, State> {
@@ -37,11 +51,12 @@ class EventWidget extends React.Component<Props, State> {
   state: State = {
     isFetching: false,
     errorMsg: '',
-    fragment: null,
+    fragments: null,
     widgetUrlBase: '',
     copied: false,
     widgetModalVisible: false,
     widgetSrc: 'about:blank',
+    variant: 'button',
   };
 
   componentDidMount(): void {
@@ -55,8 +70,8 @@ class EventWidget extends React.Component<Props, State> {
 
     api.events
       .exec('getEventWidgetFragment', { id })
-      .then(({ fragment, widgetUrlBase }) =>
-        this.setState({ fragment, widgetUrlBase }),
+      .then(({ fragments, widgetUrlBase }) =>
+        this.setState({ fragments, widgetUrlBase }),
       )
       .catch(err => this.setState({ errorMsg: err.message }))
       .then(() => this.setState({ isFetching: false }));
@@ -91,10 +106,11 @@ class EventWidget extends React.Component<Props, State> {
     const {
       isFetching,
       errorMsg,
-      fragment,
+      fragments,
       copied,
       widgetModalVisible,
       widgetSrc,
+      variant,
     } = this.state;
 
     return (
@@ -127,16 +143,66 @@ class EventWidget extends React.Component<Props, State> {
                     Не удалось загрузить данные: {errorMsg}
                   </div>
                 )}
-                {fragment && (
+                {fragments && (
                   <>
-                    <h3 className="title is-5 has-text-grey">
+                    <h3 className="title is-5 has-text-grey mb-3">
                       Код для вставки виджета
                     </h3>
+                    {/* ---- Варианты виджета --------------------- */}
+
+                    <div className="field is-horizontal">
+                      <div className="field-label">
+                        <label className="label">Варианты</label>
+                      </div>
+                      <div className="field-body">
+                        <div className="field">
+                          <div className="control">
+                            <label className="radio">
+                              <input
+                                type="radio"
+                                value="button"
+                                checked={variant === 'button'}
+                                onChange={() =>
+                                  this.setState({ variant: 'button' })
+                                }
+                              />{' '}
+                              Показ виджета по нажатию кнопки
+                            </label>
+                            <br />
+                            <label className="radio">
+                              <input
+                                type="radio"
+                                value="triggers"
+                                checked={variant === 'triggers'}
+                                onChange={() =>
+                                  this.setState({ variant: 'triggers' })
+                                }
+                              />{' '}
+                              Свои элементы-триггеры (например, для разных
+                              мероприятий)
+                            </label>
+                            <br />
+                            <label className="radio">
+                              <input
+                                type="radio"
+                                value="embed"
+                                checked={variant === 'embed'}
+                                onChange={() =>
+                                  this.setState({ variant: 'embed' })
+                                }
+                              />{' '}
+                              Встраивание виджета в страницу
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="field">
                       <textarea
                         className="textarea is-family-monospace is-size-7"
                         readOnly
-                        value={fragment}
+                        value={fragments[_v2idx(variant)]}
                         rows={15}
                       />
                     </div>
@@ -144,7 +210,7 @@ class EventWidget extends React.Component<Props, State> {
                       <div className="level-left">
                         <div className="level-item">
                           <CopyToClipboard
-                            text={fragment}
+                            text={fragments[_v2idx(variant)]}
                             onCopy={(text, result) => {
                               if (result) {
                                 this.setState({ copied: true });
