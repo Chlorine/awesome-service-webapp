@@ -56,7 +56,7 @@ export const AnswerSortableElement = SortableElement(
     onChange,
   }: AnswerSortableElementProps) => {
     return (
-      <li className="list-item">
+      <li className="list-item list-item-answer">
         <FormikField name={`answers[${currIndex}].text`}>
           {({ field, form, meta }: FieldProps) => {
             return (
@@ -108,7 +108,9 @@ export const AnswersSortableContainer = SortableContainer(
     return (
       <ul className="list list-answers">
         {answers.length === 0 && (
-          <li className="list-item has-text-grey-lighter">Добавьте варианты</li>
+          <li className="list-item list-item-answer has-text-grey-lighter">
+            Добавьте варианты
+          </li>
         )}
         {answers.map((answer, index) => (
           <AnswerSortableElement
