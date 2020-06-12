@@ -53,6 +53,7 @@ const _BD_YEAR = {
 
 export default class Personal extends React.Component<Props, State> {
   uh = new UnmountHelper();
+  bdDayRef = React.createRef<HTMLInputElement>();
 
   state: State = {
     isFetching: true,
@@ -280,6 +281,10 @@ export default class Personal extends React.Component<Props, State> {
               onClick={() => {
                 setFieldValue('withBirthday', true);
                 this.onFormValueChange();
+                setTimeout(
+                  () => this.bdDayRef.current && this.bdDayRef.current.focus(),
+                  22,
+                );
               }}
             >
               Указать день рождения
@@ -293,6 +298,7 @@ export default class Personal extends React.Component<Props, State> {
               <div className="column label">День рождения</div>
               <div className="column has-text-right">
                 <button
+                  type="button"
                   className="delete has-background-warning"
                   onClick={() => {
                     setFieldValue('withBirthday', false);
@@ -310,6 +316,7 @@ export default class Personal extends React.Component<Props, State> {
                 <div className="column is-3">
                   <div className="control">
                     <input
+                      ref={this.bdDayRef}
                       type="text"
                       inputMode="numeric"
                       name="bdDay"
