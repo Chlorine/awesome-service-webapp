@@ -1,22 +1,32 @@
 .field-answer {
   align-items: center;
-  margin-bottom: 0.25rem !important;
+  // margin-bottom: 0.25rem !important;
+  margin-bottom: 0 !important;
 }
 
 .delete-answer {
   margin-left: 0.75rem;
-  margin-right: 0;
+  margin-right: 0.25rem;
 }
 
 .answer-drag-handle {
-  margin-left: 1rem;
+  margin-left: 0.75rem;
 }
 
 .list-answers {
   list-style-type: none;
   margin-bottom: 0.5rem !important;
+  border-radius: 4px;
+  box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
 }
 
 .list-item-answer {
+  display: block;
   list-style-type: none;
+  padding: 0.5rem 0.5rem 0;
+  margin-bottom: 0 !important;
+}
+
+.list-item-answer:last-child {
+  padding-bottom: 0.5rem;
 }

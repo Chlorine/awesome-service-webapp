@@ -10,6 +10,7 @@ import { ArrayHelpers, FieldProps, Field as FormikField } from 'formik';
 
 import './QuestionHelpers.scss';
 import * as yup from 'yup';
+import { VELinkButton } from '../../Common/ViewElements';
 
 export type AnswerType = SurveyQuestionInfo['answerType'];
 
@@ -30,7 +31,7 @@ export const VALID_ANSWER_TYPES: AnswerType[] = ['YesNo', 'OneOf', 'SomeOf'];
 export const ANSWER_TYPE_NAMES: {
   [id in SurveyQuestionInfo['answerType']]: string;
 } = {
-  YesNo: 'Да или Нет',
+  YesNo: 'Чекбокс',
   OneOf: 'Один вариант из списка',
   SomeOf: 'Несколько вариантов из списка',
 };
@@ -56,7 +57,7 @@ export const AnswerSortableElement = SortableElement(
     onChange,
   }: AnswerSortableElementProps) => {
     return (
-      <li className="list-item list-item-answer">
+      <li className="list-item-answer">
         <FormikField name={`answers[${currIndex}].text`}>
           {({ field, form, meta }: FieldProps) => {
             return (
@@ -86,7 +87,7 @@ export const AnswerSortableElement = SortableElement(
                   {showDragHandle && <AnswerDragHandle />}
                 </div>
                 {meta.touched && meta.error && (
-                  <p className="help has-text-danger">{meta.error}</p>
+                  <p className="help has-text-danger mt-1">{meta.error}</p>
                 )}
               </>
             );
@@ -101,15 +102,21 @@ export type AnswersSortableContainerProps = {
   answers: AnswerVariantInfo[];
   arrayHelpers: ArrayHelpers;
   onChange?: () => void;
+  handleAdd: () => void;
 };
 
 export const AnswersSortableContainer = SortableContainer(
-  ({ answers, arrayHelpers, onChange }: AnswersSortableContainerProps) => {
+  ({
+    answers,
+    arrayHelpers,
+    onChange,
+    handleAdd,
+  }: AnswersSortableContainerProps) => {
     return (
-      <ul className="list list-answers">
+      <ul className="list-answers">
         {answers.length === 0 && (
-          <li className="list-item list-item-answer has-text-grey-lighter">
-            Добавьте варианты
+          <li className="list-item-answer has-text-grey-lighter ml-1">
+            <VELinkButton text="Добавить вариант" onClick={handleAdd} />
           </li>
         )}
         {answers.map((answer, index) => (

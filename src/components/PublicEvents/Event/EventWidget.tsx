@@ -8,6 +8,8 @@ import { SimpleSpinner } from '../../Common/SimpleSpinner';
 import api from '../../../back/server-api';
 import { AppState } from '../../../store/state';
 
+import './EventWidget.scss';
+
 const mapStateToProps = (state: AppState) => {
   return {
     currentEvent: state.currentEvent,
@@ -118,14 +120,9 @@ class EventWidget extends React.Component<Props, State> {
         <div className={`modal ${widgetModalVisible ? 'is-active' : ''}`}>
           <div className="modal-background" />
           <div className="modal-content">
-            <figure className="image is-9by16">
-              <iframe
-                title="widget-test"
-                className="has-ratio"
-                scrolling={'no'}
-                src={widgetSrc}
-              />
-            </figure>
+            <div className="widget-iframe-container">
+              <iframe title="widget-test" scrolling={'yes'} src={widgetSrc} />
+            </div>
           </div>
           <button
             className="modal-close is-large"
@@ -150,7 +147,7 @@ class EventWidget extends React.Component<Props, State> {
                     </h3>
                     {/* ---- Варианты виджета --------------------- */}
 
-                    <div className="field is-horizontal">
+                    <div className="field is-horizontal py-3">
                       <div className="field-label">
                         <label className="label">Варианты</label>
                       </div>

@@ -107,7 +107,7 @@ class Event extends React.Component<Props, State> {
           linkTo: '/fast-track',
         },
         {
-          title: 'Виджет',
+          title: 'Виджет регистрации',
           linkTo: '/widget',
         },
       ],

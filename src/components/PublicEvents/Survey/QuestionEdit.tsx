@@ -222,15 +222,17 @@ class QuestionEdit extends React.Component<Props, State> {
                     <div className="field">
                       <div className="columns is-gapless is-mobile">
                         <div className="column label">Варианты ответов</div>
-                        <div className="column has-text-right">
-                          <VELinkButton
-                            text="Добавить"
-                            onClick={() => {
-                              arrayHelpers.push(makeNewAnswerVariant());
-                              this.onFormValueChange();
-                            }}
-                          />
-                        </div>
+                        {values.answers.length > 0 && (
+                          <div className="column has-text-right">
+                            <VELinkButton
+                              text="Добавить"
+                              onClick={() => {
+                                arrayHelpers.push(makeNewAnswerVariant());
+                                this.onFormValueChange();
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                     <AnswersSortableContainer
@@ -249,6 +251,10 @@ class QuestionEdit extends React.Component<Props, State> {
                         }
                       }}
                       onChange={this.onFormValueChange}
+                      handleAdd={() => {
+                        arrayHelpers.push(makeNewAnswerVariant());
+                        this.onFormValueChange();
+                      }}
                     />
                   </>
                 );

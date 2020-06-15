@@ -1,0 +1,15 @@
+.widget-iframe-container {
+  overflow: hidden;
+  height: 70vh;
+  padding-top: 56.25%;
+  position: relative;
+}
+
+.widget-iframe-container iframe {
+  border: 0;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}

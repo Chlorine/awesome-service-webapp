@@ -207,14 +207,16 @@ class SurveysCreateNew extends React.Component<Props, State> {
                     <div className="field">
                       <div className="columns is-gapless is-mobile">
                         <div className="column label">Варианты ответов</div>
-                        <div className="column has-text-right">
-                          <VELinkButton
-                            text="Добавить"
-                            onClick={() =>
-                              arrayHelpers.push(makeNewAnswerVariant())
-                            }
-                          />
-                        </div>
+                        {values.answers.length > 0 && (
+                          <div className="column has-text-right">
+                            <VELinkButton
+                              text="Добавить"
+                              onClick={() =>
+                                arrayHelpers.push(makeNewAnswerVariant())
+                              }
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                     <AnswersSortableContainer
@@ -231,6 +233,9 @@ class SurveysCreateNew extends React.Component<Props, State> {
                           );
                         }
                       }}
+                      handleAdd={() =>
+                        arrayHelpers.push(makeNewAnswerVariant())
+                      }
                     />
                   </>
                 );
