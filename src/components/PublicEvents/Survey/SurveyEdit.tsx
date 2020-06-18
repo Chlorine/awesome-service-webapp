@@ -4,7 +4,6 @@ import { Formik, FormikProps, FormikHelpers } from 'formik';
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-import { AppState } from '../../../store/state';
 import { Actions as CurrentSurveyActions } from '../../../actions/current-survey';
 
 import api from '../../../back/server-api';
@@ -19,7 +18,9 @@ import {
   VEPageSecondaryTitle,
 } from '../../Common/ViewElements';
 
-const mapStateToProps = (state: AppState) => {
+import { RootState } from '../../../store';
+
+const mapStateToProps = (state: RootState) => {
   return {
     currentSurvey: state.currentSurvey,
   };

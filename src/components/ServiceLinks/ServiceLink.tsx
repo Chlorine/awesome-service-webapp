@@ -1,13 +1,12 @@
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { AppState } from '../../store/state';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import * as QS from 'query-string';
 
-import { history } from '../../store';
+import { history, RootState } from '../../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
   };

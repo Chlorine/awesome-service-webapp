@@ -5,8 +5,6 @@ import { Formik, FormikHelpers, FormikProps } from 'formik';
 import * as yup from 'yup';
 import { Link } from 'react-router-dom';
 
-import { AppState } from '../store/state';
-
 import api from './../back/server-api';
 
 import { PositiveResults } from './Common/PositiveResults';
@@ -21,8 +19,9 @@ import {
 } from './Common/Forms';
 
 import { Alert } from './Common/Alert';
+import { RootState } from '../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     auth: state.auth,
     router: state.router,
@@ -306,7 +305,9 @@ class SignUp extends React.Component<Props, State> {
         {/* -- Ссылки на регистрацию и восстановлялово пароля ------*/}
 
         <p className="has-text-grey">
-          <Link to="/login">Уже есть учетная запись</Link>
+          <Link className="has-text-link" to="/login">
+            Уже есть учетная запись
+          </Link>
         </p>
       </div>
     );
@@ -334,7 +335,11 @@ class SignUp extends React.Component<Props, State> {
             </div>
             <nav className="level is-mobile">
               <div className="level-left">
-                <Link className="level-item" aria-label="home" to="/">
+                <Link
+                  className="level-item has-text-link"
+                  aria-label="home"
+                  to="/"
+                >
                   На главную
                 </Link>
               </div>

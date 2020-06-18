@@ -6,9 +6,9 @@ import { connect } from 'react-redux';
 
 import api from '../../../back/server-api';
 
+import { RootState } from '../../../store';
 import { MenuSection, SideMenu } from '../../Common/SideMenu';
 import { Breadcrumbs } from '../../Common/Breadcrumbs';
-import { AppState } from '../../../store/state';
 import { Actions as CurrentSurveyActions } from '../../../actions/current-survey';
 import { UnmountHelper } from '../../../utils/unmount-helper';
 
@@ -23,7 +23,7 @@ import SurveyEdit from './SurveyEdit';
 import SurveyAnswers from './SurveyAnswers';
 import SurveyQuestionsCreateNew from './SurveyQuestionsCreateNew';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
     currentSurvey: state.currentSurvey,

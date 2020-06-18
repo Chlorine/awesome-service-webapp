@@ -27,7 +27,7 @@ export default class EventsArchive extends React.Component<Props, State> {
     this.setState({ isFetching: true });
 
     api.events
-      .exec('getEvents', { __delay: 0, __genErr: false })
+      .exec('getEvents', { limit: 1000, __delay: 100, __genErr: false })
       .then(({ events }) => this.setState({ events }))
       .catch(err => this.setState({ errorMsg: err.message }))
       .then(() => this.setState({ isFetching: false }));

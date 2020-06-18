@@ -7,7 +7,6 @@ import { add, parseISO } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import { truncate } from 'lodash';
 
-import { AppState } from '../../../store/state';
 import { Actions as CurrentEventActions } from '../../../actions/current-event';
 
 import api from '../../../back/server-api';
@@ -22,7 +21,9 @@ import {
   TextInputField,
 } from '../../Common/Forms';
 
-const mapStateToProps = (state: AppState) => {
+import { RootState } from '../../../store';
+
+const mapStateToProps = (state: RootState) => {
   return {
     currentEvent: state.currentEvent,
   };
@@ -107,7 +108,13 @@ class EventEdit extends React.Component<Props, State> {
     this.setState({ isFetching: true, fetchErrorMsg: '' });
 
     this.uh
-      .wrap(api.events.exec('getSurveys', { __delay: 0, __genErr: false }))
+      .wrap(
+        api.events.exec('getSurveys', {
+          limit: 1000,
+          __delay: 0,
+          __genErr: false,
+        }),
+      )
       .then(({ err, results }) => {
         if (err) {
           this.setState({ fetchErrorMsg: err.message });

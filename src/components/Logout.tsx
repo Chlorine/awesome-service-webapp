@@ -3,11 +3,11 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import { Actions as AuthActions } from '../actions/auth';
-import { AppState } from '../store/state';
 
 import api from '../back/server-api';
+import { RootState } from '../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     auth: state.auth,
     router: state.router,

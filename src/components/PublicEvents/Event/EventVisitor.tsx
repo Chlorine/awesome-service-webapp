@@ -1,16 +1,17 @@
 import React from 'react';
-
 import { Route, RouteComponentProps } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 import { Redirect, Switch } from 'react-router';
 import { connect } from 'react-redux';
-import { truncate } from 'lodash';
+import * as _ from 'lodash';
 
 import api from '../../../back/server-api';
 
+import { RootState } from '../../../store';
+import { Actions as CurrentEventVisitorActions } from '../../../actions/current-event-visitor';
 import { UnmountHelper } from '../../../utils/unmount-helper';
 import { MenuSection, SideMenu } from '../../Common/SideMenu';
-import { Breadcrumbs } from '../../Common/Breadcrumbs';
+import { BreadcrumbItem, Breadcrumbs } from '../../Common/Breadcrumbs';
 
 import {
   VEFetchError,
@@ -18,24 +19,20 @@ import {
   VEPageTitle,
 } from '../../Common/ViewElements';
 
-import QuestionEdit from './QuestionEdit';
-import QuestionRemove from './QuestionRemove';
-
-import { Actions as CurrentQuestionActions } from '../../../actions/current-question';
-import { RootState } from '../../../store';
+import EventVisitorInfo from './EventVisitorInfo';
+import { NameFormatter } from '../../../utils/name-formatter';
 
 const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
-    currentQuestion: state.currentQuestion,
-    currentSurvey: state.currentSurvey,
+    currentEventVisitor: state.currentEventVisitor,
   };
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
-    currentQuestionActions: bindActionCreators(
-      CurrentQuestionActions,
+    currentEventVisitorActions: bindActionCreators(
+      CurrentEventVisitorActions,
       dispatch,
     ),
   };
@@ -43,14 +40,14 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
 
 declare type Props = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps<{ questionId?: string }>;
+  RouteComponentProps<{ visitorId?: string }>;
 
 declare type State = {
   isFetching: boolean;
   fetchErrorMsg: string;
 };
 
-class Question extends React.Component<Props, State> {
+class EventVisitor extends React.Component<Props, State> {
   uh = new UnmountHelper();
 
   state: State = {
@@ -58,23 +55,23 @@ class Question extends React.Component<Props, State> {
     fetchErrorMsg: '',
   };
 
-  get questionId(): string {
-    return this.props.match.params.questionId || 'invalid_question_id';
+  get visitorId(): string {
+    return this.props.match.params.visitorId || 'invalid_visitor_id';
   }
 
   componentDidMount(): void {
     this.uh.onMount();
 
-    document.title = 'Вопрос';
+    document.title = 'Посетитель';
 
-    this.props.currentQuestionActions.infoReset();
+    this.props.currentEventVisitorActions.infoReset();
     this.setState({ isFetching: true, fetchErrorMsg: '' });
 
     this.uh
       .wrap(
-        api.events.exec('getSurveyQuestion', {
-          id: this.questionId,
-          __delay: 0,
+        api.events.exec('getEventVisitor', {
+          id: this.visitorId,
+          __delay: 33,
           __genErr: false,
         }),
       )
@@ -83,9 +80,9 @@ class Question extends React.Component<Props, State> {
         if (err) {
           this.setState({ fetchErrorMsg: err.message });
         } else {
-          const { question } = results;
-          this.props.currentQuestionActions.infoLoaded(question);
-          document.title = question.text;
+          const { visitor } = results;
+          this.props.currentEventVisitorActions.infoLoaded(visitor);
+          document.title = new NameFormatter(visitor).getShortName();
         }
       });
   }
@@ -96,16 +93,11 @@ class Question extends React.Component<Props, State> {
 
   private sideMenuSections: MenuSection[] = [
     {
-      title: 'Вопрос',
+      title: 'Посетитель',
       items: [
         {
-          title: 'Изменить параметры',
-          linkTo: '/edit',
-        },
-        {
-          title: 'Удаление',
-          linkTo: '/remove',
-          isDanger: false,
+          title: 'Обзор',
+          linkTo: '/info',
         },
       ],
     },
@@ -117,10 +109,9 @@ class Question extends React.Component<Props, State> {
         <Route
           exact
           path={basePath}
-          component={() => <Redirect to={`${basePath}/edit`} />}
+          component={() => <Redirect to={`${basePath}/info`} />}
         />
-        <Route path={`${basePath}/edit`} component={QuestionEdit} />
-        <Route path={`${basePath}/remove`} component={QuestionRemove} />
+        <Route path={`${basePath}/info`} component={EventVisitorInfo} />
         <Route
           component={() => (
             <small className="has-text-grey">
@@ -136,10 +127,23 @@ class Question extends React.Component<Props, State> {
     const { url: basePath } = this.props.match;
 
     const { isFetching, fetchErrorMsg } = this.state;
-    const { question } = this.props.currentQuestion;
+    const { visitor } = this.props.currentEventVisitor;
 
-    // может не быть если F5
-    const { survey } = this.props.currentSurvey;
+    const bcItems: BreadcrumbItem[] = [
+      { title: 'Сервисы', linkTo: '/' },
+      { title: 'Мероприятия', linkTo: '/public-events' },
+    ];
+
+    if (visitor) {
+      bcItems.push({
+        title: _.truncate(visitor.eventName, {
+          length: 32,
+        }),
+        linkTo: `/public-event/${visitor.eventId}/visitors`,
+      });
+    }
+
+    const nf = new NameFormatter(visitor);
 
     return (
       <section className="hero is-white">
@@ -149,28 +153,18 @@ class Question extends React.Component<Props, State> {
 
             <div className="columns">
               <div className="column is-12">
-                {/* --- Текст вопроса ------------------------- */}
+                {/* --- Название мероприятия ------------------------- */}
 
                 <VEPageTitle
-                  title={question?.text || 'Текст вопроса'}
+                  title={visitor ? nf.getFullName() : 'Посетитель'}
                   isFetching={isFetching}
                 />
 
                 {/* --- Навигация ------------------------- */}
 
                 <Breadcrumbs
-                  items={[
-                    { title: 'Сервисы', linkTo: '/' },
-                    {
-                      title: 'Анкеты мероприятий',
-                      linkTo: '/public-events/surveys',
-                    },
-                    {
-                      title: truncate(survey?.name || 'Анкета', { length: 32 }),
-                      linkTo: `/public-event-survey/${question?.surveyId}`,
-                    },
-                  ]}
-                  current={question?.text}
+                  items={bcItems}
+                  current={visitor && nf.getShortName()}
                   currentMaxLength={32}
                 />
               </div>
@@ -182,7 +176,7 @@ class Question extends React.Component<Props, State> {
           <div className="container">
             <VEFetchingSpinner isFetching={isFetching} />
             <VEFetchError msg={fetchErrorMsg} />
-            {!isFetching && !fetchErrorMsg && question && (
+            {!isFetching && !fetchErrorMsg && visitor && (
               <div className="columns">
                 {/* --- Menu ----------------------- */}
 
@@ -207,4 +201,4 @@ class Question extends React.Component<Props, State> {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Question);
+export default connect(mapStateToProps, mapDispatchToProps)(EventVisitor);

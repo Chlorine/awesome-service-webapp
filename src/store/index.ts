@@ -6,7 +6,6 @@ import { routerMiddleware } from 'connected-react-router';
 import thunk from 'redux-thunk';
 
 import { createRootReducer } from './reducers';
-import { AppState } from './state';
 
 export const history = createBrowserHistory();
 
@@ -15,7 +14,7 @@ const rootReducer = createRootReducer(history);
 export type RootState = ReturnType<typeof rootReducer>;
 
 export const configureStore = () => {
-  const preloadedState: Partial<AppState> = {};
+  const preloadedState: Partial<RootState> = {};
 
   const store = createStore(
     rootReducer,

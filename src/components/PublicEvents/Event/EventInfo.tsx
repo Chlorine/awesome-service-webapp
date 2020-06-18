@@ -3,7 +3,6 @@ import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import * as _ from 'lodash';
 
-import { AppState } from '../../../store/state';
 import { formatEventDates } from '../../../utils/format-event-date';
 import {
   VEDescriptionAsSubtitle,
@@ -16,8 +15,9 @@ import api from '../../../back/server-api';
 import { SurveyInfo } from '../../../back/common/public-events/survey';
 import { Pluralize, Words } from '../../../utils/pluralize-ru';
 import { Link } from 'react-router-dom';
+import { RootState } from '../../../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     currentEvent: state.currentEvent,
   };
@@ -146,12 +146,15 @@ class EventInfo extends React.Component<Props, State> {
                     <i className="fa fa-list-ol" />
                   </span>{' '}
                   {survey && (
-                    <Link to={`/public-event-survey/${survey.id}`}>
+                    <Link
+                      className="has-text-link"
+                      to={`/public-event-survey/${survey.id}`}
+                    >
                       {_.truncate(survey.name, { length: 32 })}
                     </Link>
                   )}
                   {!survey && (
-                    <span className="has-text-grey-light">Без анкеты</span>
+                    <span className="has-text-grey-lighter">Без анкеты</span>
                   )}
                 </p>
 
@@ -161,7 +164,19 @@ class EventInfo extends React.Component<Props, State> {
                   <span className="icon has-text-primary">
                     <i className="fa fa-users" />
                   </span>{' '}
-                  {Pluralize.count(visitorCount, Words.Visitors)}
+                  {visitorCount === 0 && (
+                    <span className="has-text-grey-lighter">
+                      Посетителей пока нет
+                    </span>
+                  )}
+                  {visitorCount > 0 && (
+                    <Link
+                      className="has-text-link"
+                      to={`/public-event/${event.id}/visitors`}
+                    >
+                      {Pluralize.count(visitorCount, Words.Visitors)}
+                    </Link>
+                  )}
                 </p>
               </div>
             </div>

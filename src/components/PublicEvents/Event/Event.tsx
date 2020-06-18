@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 
 import api from '../../../back/server-api';
 
-import { AppState } from '../../../store/state';
+import { RootState } from '../../../store';
 import { Actions as CurrentEventActions } from '../../../actions/current-event';
 import { UnmountHelper } from '../../../utils/unmount-helper';
 import { MenuSection, SideMenu } from '../../Common/SideMenu';
@@ -21,10 +21,10 @@ import {
 import EventEdit from './EventEdit';
 import EventFastTrack from './EventFastTrack';
 import EventWidget from './EventWidget';
-import EventVisitorsInfo from './EventVisitorsInfo';
+import EventVisitors from './EventVisitors';
 import EventInfo from './EventInfo';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
     currentEvent: state.currentEvent,
@@ -114,7 +114,7 @@ class Event extends React.Component<Props, State> {
     },
     {
       title: 'Посетители',
-      items: [{ title: 'Обзор', linkTo: '/visitors' }],
+      items: [{ title: 'Список', linkTo: '/visitors' }],
     },
   ];
 
@@ -130,7 +130,7 @@ class Event extends React.Component<Props, State> {
         <Route path={`${basePath}/edit`} component={EventEdit} />
         <Route path={`${basePath}/fast-track`} component={EventFastTrack} />
         <Route path={`${basePath}/widget`} component={EventWidget} />
-        <Route path={`${basePath}/visitors`} component={EventVisitorsInfo} />
+        <Route path={`${basePath}/visitors`} component={EventVisitors} />
         <Route
           component={() => (
             <small className="has-text-grey">

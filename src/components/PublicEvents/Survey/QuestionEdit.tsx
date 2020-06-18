@@ -9,11 +9,11 @@ import arrayMove from 'array-move';
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-import { AppState } from '../../../store/state';
 import { Actions as CurrentQuestionActions } from '../../../actions/current-question';
 
 import api from '../../../back/server-api';
 
+import { RootState } from '../../../store';
 import { UnmountHelper } from '../../../utils/unmount-helper';
 
 import {
@@ -39,7 +39,7 @@ import {
 } from './QuestionHelpers';
 import { SurveyQuestionInfo } from '../../../back/common/public-events/survey-question';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     currentQuestion: state.currentQuestion,
     currentSurvey: state.currentSurvey,

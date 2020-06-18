@@ -1,13 +1,13 @@
 import React from 'react';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Link } from 'react-router-dom';
-import { AppState } from '../store/state';
+import { RootState } from '../store';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import './Home.scss';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
   };
@@ -47,7 +47,10 @@ class Home extends React.Component<Props, State> {
             <span className="tag is-warning">
               <strong>Внимание!</strong>
             </span>{' '}
-            Регистрация пользователей <Link to={'/signup'}>открыта</Link>
+            Регистрация пользователей{' '}
+            <Link className="has-text-link" to={'/signup'}>
+              открыта
+            </Link>
           </p>
         </div>
         <div className="home-intro column is-8 is-offset-2">

@@ -14,7 +14,7 @@ import arrayMove from 'array-move';
 
 import api from '../../../back/server-api';
 
-import { AppState } from '../../../store/state';
+import { RootState } from '../../../store';
 import { Actions as CurrentSurveyActions } from '../../../actions/current-survey';
 import { SurveyQuestionInfo } from '../../../back/common/public-events/survey-question';
 import { UnmountHelper } from '../../../utils/unmount-helper';
@@ -29,7 +29,7 @@ import { ANSWER_TYPE_NAMES } from './QuestionHelpers';
 
 import './SurveyQuestions.scss';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     currentSurvey: state.currentSurvey,
   };
@@ -247,7 +247,7 @@ class SurveyQuestions extends React.Component<Props, State> {
           <div className="columns">
             {questions.length === 0 && (
               <div className="column is-12 has-text-centered">
-                <p>Вопросов еще нет</p>
+                <p className="has-text-grey"> Вопросов еще нет</p>
                 <br />
                 <Link
                   className="button is-primary is-outlined"

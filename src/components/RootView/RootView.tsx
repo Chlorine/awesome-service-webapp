@@ -3,7 +3,6 @@ import { Dispatch, bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import { Actions as AuthActions } from '../../actions/auth';
-import { AppState } from '../../store/state';
 
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
@@ -11,11 +10,12 @@ import { Footer } from './Footer';
 import api from '../../back/server-api';
 
 import { CurrentBreakpoint } from '../Common/CurrentBreakpoint';
+import { RootState } from '../../store';
 
 let _SHOW_CURRENT_BREAKPOINT = process.env.NODE_ENV !== 'production';
-_SHOW_CURRENT_BREAKPOINT = false;
+_SHOW_CURRENT_BREAKPOINT = true;
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     auth: state.auth,
     router: state.router,

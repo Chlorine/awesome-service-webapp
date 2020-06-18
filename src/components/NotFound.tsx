@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AppState } from '../store/state';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
+import { RootState } from '../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
   };
@@ -37,7 +37,9 @@ class NotFound extends React.Component<Props, State> {
             <span className="has-text-danger">Страница не найдена</span>
             <br />
             <br />
-            <Link to="/">На главную</Link>
+            <Link className="has-text-link" to="/">
+              На главную
+            </Link>
           </div>
         </div>
       </section>

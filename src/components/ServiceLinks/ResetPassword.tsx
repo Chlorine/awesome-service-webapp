@@ -5,8 +5,6 @@ import { Formik, FormikHelpers, FormikProps } from 'formik';
 import * as yup from 'yup';
 import { Link, RouteComponentProps } from 'react-router-dom';
 
-import { AppState } from '../../store/state';
-
 import api from './../../back/server-api';
 
 import { PositiveResults } from '../Common/PositiveResults';
@@ -14,8 +12,9 @@ import { Actions as AuthActions } from '../../actions/auth';
 
 import { PasswordInputField, SubmitButton } from '../Common/Forms';
 import { Alert } from '../Common/Alert';
+import { RootState } from '../../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
     auth: state.auth,

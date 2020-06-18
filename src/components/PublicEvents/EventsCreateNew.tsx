@@ -102,7 +102,13 @@ export default class EventsCreateNew extends React.Component<Props, State> {
     this.setState({ isFetching: true, fetchErrorMsg: '' });
 
     this.uh
-      .wrap(api.events.exec('getSurveys', { __delay: 0, __genErr: false }))
+      .wrap(
+        api.events.exec('getSurveys', {
+          limit: 1000,
+          __delay: 0,
+          __genErr: false,
+        }),
+      )
       .then(({ err, results }) => {
         this.setState({ isFetching: false });
 

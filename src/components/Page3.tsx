@@ -1,11 +1,12 @@
 import React from 'react';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Link } from 'react-router-dom';
-import { AppState } from '../store/state';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-const mapStateToProps = (state: AppState) => {
+import { RootState } from '../store';
+
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
   };

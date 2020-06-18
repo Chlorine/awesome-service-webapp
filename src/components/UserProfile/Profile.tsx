@@ -1,5 +1,4 @@
 import React from 'react';
-import { AppState } from '../../store/state';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Switch } from 'react-router';
@@ -9,8 +8,9 @@ import Personal from './Personal';
 import Password from './Password';
 import { SideMenu } from '../Common/SideMenu';
 import { VEPageTitle } from '../Common/ViewElements';
+import { RootState } from '../../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
     auth: state.auth,

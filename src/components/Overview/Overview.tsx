@@ -1,5 +1,4 @@
 import React from 'react';
-import { AppState } from '../../store/state';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
@@ -15,8 +14,9 @@ import {
   VEFetchingSpinner,
   VEPageTitle,
 } from '../Common/ViewElements';
+import { RootState } from '../../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
     auth: state.auth,
@@ -132,7 +132,9 @@ class Overview extends React.Component<Props, State> {
                       </div>
                     </div>
                     <p>
-                      <Link to={'/public-events'}>Управлять мероприятиями</Link>
+                      <Link className="has-text-link" to={'/public-events'}>
+                        Управлять мероприятиями
+                      </Link>
                     </p>
                   </div>
                 </div>

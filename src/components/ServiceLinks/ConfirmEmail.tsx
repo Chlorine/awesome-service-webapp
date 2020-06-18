@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { AppState } from '../../store/state';
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
@@ -8,8 +7,9 @@ import api from '../../back/server-api';
 import { PositiveResults } from '../Common/PositiveResults';
 import { Actions as AuthActions } from '../../actions/auth';
 import { Alert } from '../Common/Alert';
+import { RootState } from '../../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     auth: state.auth,
     router: state.router,

@@ -52,7 +52,7 @@ export const VEPageTitle: React.FC<{ title: string; isFetching?: boolean }> = ({
 }) => {
   return (
     <h3
-      className={classNames('is-4 title ve-page-title', {
+      className={classNames('is-4 title text-truncate', {
         'has-text-grey-lighter': isFetching,
         'has-text-grey': !isFetching,
       })}
@@ -68,8 +68,14 @@ export const VEPageSecondaryTitle: React.FC<{
   textClass?: string;
 }> = ({ title, linkTo, textClass }) => {
   return (
-    <h3 className={`title ve-page-title is-5 ${textClass || 'has-text-grey'}`}>
-      {linkTo ? <Link to={linkTo}>{title}</Link> : title}
+    <h3 className={`title text-truncate is-5 ${textClass || 'has-text-grey'}`}>
+      {linkTo ? (
+        <Link to={linkTo} className="has-text-link">
+          {title}
+        </Link>
+      ) : (
+        title
+      )}
     </h3>
   );
 };
@@ -93,6 +99,52 @@ export const VELinkButton: React.FC<{ text: string; onClick: () => void }> = ({
   text,
   onClick,
 }) => {
-  // eslint-disable-next-line jsx-a11y/anchor-is-valid
-  return <a onClick={onClick}>{text}</a>;
+  return (
+    // eslint-disable-next-line jsx-a11y/anchor-is-valid
+    <a className="has-text-link" onClick={onClick}>
+      {text}
+    </a>
+  );
+};
+
+export const VEObjectPropertyInfo: React.FC<{
+  propName: string;
+  propIcon?: string;
+  value: string | null | undefined;
+  valueNotAvailableText?: string;
+  href?: string;
+  anchorTarget?: string;
+}> = ({
+  propName,
+  propIcon,
+  value,
+  valueNotAvailableText,
+  href,
+  anchorTarget,
+}) => {
+  return (
+    <p>
+      <strong className="has-text-grey-light">
+        {propIcon && (
+          <>
+            <span className="icon">
+              <i className={`fa ${propIcon}`} />
+            </span>{' '}
+          </>
+        )}
+        {propName && <span>{propName}: </span>}
+      </strong>
+      {value && href && (
+        <a className="has-text-link" href={href} target={anchorTarget}>
+          {value}
+        </a>
+      )}
+      {value && !href && <span>{value}</span>}
+      {!value && (
+        <span className="has-text-grey-lighter">
+          {valueNotAvailableText || 'Нет данных'}
+        </span>
+      )}
+    </p>
+  );
 };

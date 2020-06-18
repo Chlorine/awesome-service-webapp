@@ -19,7 +19,9 @@ export const Breadcrumbs: React.FC<{
       <ul>
         {items.map((item, index) => (
           <li key={index}>
-            <Link to={item.linkTo}>{item.title}</Link>
+            <Link className="has-text-link" to={item.linkTo}>
+              {item.title}
+            </Link>
           </li>
         ))}
 

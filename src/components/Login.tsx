@@ -7,7 +7,6 @@ import { LocationDescriptorObject } from 'history';
 import * as yup from 'yup';
 
 import { Actions as AuthActions } from '../actions/auth';
-import { AppState } from '../store/state';
 import api from './../back/server-api';
 import { LoginResponse } from '../back/common/users';
 import { SimpleSpinner } from './Common/SimpleSpinner';
@@ -17,8 +16,9 @@ import {
   TextInputField,
 } from './Common/Forms';
 import { Alert } from './Common/Alert';
+import { RootState } from '../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     auth: state.auth,
     router: state.router,
@@ -204,8 +204,13 @@ class Login extends React.Component<Props, State> {
                 {/* -- Ссылки на регистрацию и восстановлялово пароля ------*/}
                 {!isCheckingAuth && (
                   <p className="has-text-grey">
-                    <Link to="/signup">Регистрация</Link> &nbsp;·&nbsp;{' '}
-                    <Link to="/forgotten-password">Забыли пароль?</Link>
+                    <Link className="has-text-link" to="/signup">
+                      Регистрация
+                    </Link>{' '}
+                    &nbsp;·&nbsp;{' '}
+                    <Link className="has-text-link" to="/forgotten-password">
+                      Забыли пароль?
+                    </Link>
                   </p>
                 )}
               </div>

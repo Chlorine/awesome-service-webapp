@@ -5,14 +5,14 @@ import { Link } from 'react-router-dom';
 import { Formik, FormikHelpers, FormikProps } from 'formik';
 import * as yup from 'yup';
 
-import { AppState } from '../store/state';
 import api from './../back/server-api';
 
 import { PositiveResults } from './Common/PositiveResults';
 import { SubmitButton, TextInputField } from './Common/Forms';
 import { Alert } from './Common/Alert';
+import { RootState } from '../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     router: state.router,
   };
@@ -168,8 +168,13 @@ class ForgottenPassword extends React.Component<Props, State> {
                 {/* -- Ссылки на регистрацию и логин ------*/}
                 {!email && (
                   <p className="has-text-grey">
-                    <Link to="/signup">Регистрация</Link> &nbsp;·&nbsp;{' '}
-                    <Link to="/login">Вход</Link>
+                    <Link className="has-text-link" to="/signup">
+                      Регистрация
+                    </Link>{' '}
+                    &nbsp;·&nbsp;{' '}
+                    <Link className="has-text-link" to="/login">
+                      Вход
+                    </Link>
                   </p>
                 )}
               </div>

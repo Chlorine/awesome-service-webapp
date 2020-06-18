@@ -6,11 +6,11 @@ import * as _ from 'lodash';
 
 import { SimpleSpinner } from '../../Common/SimpleSpinner';
 import api from '../../../back/server-api';
-import { AppState } from '../../../store/state';
 
 import './EventWidget.scss';
+import { RootState } from '../../../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     currentEvent: state.currentEvent,
   };

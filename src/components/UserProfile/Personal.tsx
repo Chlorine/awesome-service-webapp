@@ -278,6 +278,7 @@ export default class Personal extends React.Component<Props, State> {
           <div className="field">
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
+              className="has-text-link"
               onClick={() => {
                 setFieldValue('withBirthday', true);
                 this.onFormValueChange();

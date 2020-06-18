@@ -28,16 +28,28 @@ export type EventVisitorInfo = {
 
   sourceType?: EventVisitorSourceType;
   sourceData?: EventVisitorSourceData;
+
+  /**
+   * Дата и время регистрации в формате ISO 8601 (UTC)
+   */
+  regTimestamp: string;
 } & EventVisitorBase;
 
 export type RegisterEventVisitorParams = {
   eventId: string;
   visitor: EventVisitorBase;
 
-  surveyAnswers?: [SurveyAnswerInfo];
+  surveyAnswers?: SurveyAnswerInfo[];
 
   sourceType: EventVisitorSourceType;
   sourceData?: EventVisitorSourceData;
 };
 
 export type ModifyEventVisitorParams = { id: string } & Partial<EventVisitorBase>;
+
+export type EventVisitorFullInfo = EventVisitorInfo & {
+  eventName: string;
+  regRemoteAddr?: string;
+  uaInfo: any;
+  surveyAnswers: SurveyAnswerInfo[];
+};

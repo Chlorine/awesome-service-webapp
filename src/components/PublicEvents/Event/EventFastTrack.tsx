@@ -5,9 +5,9 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 
 import { SimpleSpinner } from '../../Common/SimpleSpinner';
 import api from '../../../back/server-api';
-import { AppState } from '../../../store/state';
+import { RootState } from '../../../store';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     currentEvent: state.currentEvent,
   };
@@ -70,7 +70,12 @@ class EventFastTrack extends React.Component<Props, State> {
                     Ссылка быстрой регистрации
                   </h3>
                   <p className="content">
-                    <a href={link} target="_blank" rel="noopener noreferrer">
+                    <a
+                      className="has-text-link"
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       {link}
                     </a>
                   </p>

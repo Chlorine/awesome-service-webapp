@@ -9,10 +9,15 @@ import { UnmountHelper } from '../../utils/unmount-helper';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import {
   VEDescriptionAsSubtitle,
-  VEFetchError,
-  VEFetchingSpinner,
   VEPageSecondaryTitle,
 } from '../Common/ViewElements';
+
+import {
+  getSavedPageSize,
+  PaginationControls,
+  PaginationState,
+} from '../Common/Pagination';
+import { Alert } from '../Common/Alert';
 
 declare type Props = {};
 
@@ -20,7 +25,9 @@ declare type State = {
   isFetching: boolean;
   errorMsg: string;
   surveys: SurveyInfo[];
-};
+} & PaginationState;
+
+const PG_VIEW_NAME = 'surveys';
 
 export default class Surveys extends React.Component<Props, State> {
   uh = new UnmountHelper();
@@ -29,6 +36,8 @@ export default class Surveys extends React.Component<Props, State> {
     isFetching: false,
     errorMsg: '',
     surveys: [],
+    // pagination:
+    pageSize: getSavedPageSize(PG_VIEW_NAME),
   };
 
   componentDidMount(): void {
@@ -36,12 +45,24 @@ export default class Surveys extends React.Component<Props, State> {
 
     document.title = 'Анкеты';
 
-    this.setState({ isFetching: true });
+    this.goToPage(1);
+  }
+
+  componentWillUnmount(): void {
+    this.uh.onUnmount();
+  }
+
+  goToPage = (page: number) => {
+    const { pageSize } = this.state;
+
+    this.setState({ isFetching: true, errorMsg: '' });
+
     this.uh
       .wrap(
         api.events.exec('getSurveys', {
-          __delay: 0,
-          __genErr: false,
+          limit: pageSize,
+          offset: pageSize * (page - 1),
+          __delay: 33,
         }),
       )
       .then(({ err, results }) => {
@@ -50,27 +71,31 @@ export default class Surveys extends React.Component<Props, State> {
           this.setState({ errorMsg: err.message });
         } else {
           const { surveys } = results;
-          this.setState({ surveys });
+          this.setState({ surveys, pgRes: results });
         }
       });
-  }
-
-  componentWillUnmount(): void {
-    this.uh.onUnmount();
-  }
+  };
 
   render() {
-    const { isFetching, errorMsg, surveys } = this.state;
+    const { isFetching, errorMsg, surveys, pgRes, pageSize } = this.state;
 
     return (
       <div className="container">
-        <VEFetchingSpinner isFetching={isFetching} />
-        <VEFetchError msg={errorMsg} />
-        {!isFetching && !errorMsg && (
-          <div className="columns">
-            {surveys.length === 0 && (
-              <div className="column is-12 has-text-centered">
-                <p>Анкет еще нет</p>
+        <div className="columns">
+          <div className="column is-12">
+            {!pgRes && isFetching && (
+              <div className="flex-row-centered has-text-grey-light has-text-weight-bold">
+                <span className="loader is-loading mr-3" /> Загрузка...
+              </div>
+            )}
+            {errorMsg && (
+              <Alert type="danger">
+                Не удалось загрузить анкеты: {errorMsg}
+              </Alert>
+            )}
+            {!isFetching && !errorMsg && surveys.length === 0 && (
+              <div className="has-text-centered has-text-grey">
+                <p className="has-text-grey">Анкет еще нет</p>
                 <br />
                 <Link
                   className="button is-primary is-outlined"
@@ -81,43 +106,55 @@ export default class Surveys extends React.Component<Props, State> {
               </div>
             )}
             {surveys.length > 0 && (
-              <div className="column is-12">
-                {/*<p className="control has-icons-left">*/}
-                {/*  <input className="input" type="text" placeholder="Search" />*/}
-                {/*  <span className="icon is-left">*/}
-                {/*    <i className="fa fa-search" aria-hidden="true"></i>*/}
-                {/*  </span>*/}
-                {/*</p>*/}
+              <>
                 {surveys.map(survey => (
-                  <div key={survey.id} className="box">
-                    <div className="media">
-                      <div className="media-left">
-                        <span className="icon is-large">
-                          <i className="fa fa-2x fa-list-ol has-text-grey-light" />
-                        </span>
-                      </div>
-                      <div className="media-content zero-min-width">
-                        <VEPageSecondaryTitle
-                          title={survey.name}
-                          linkTo={`/public-event-survey/${survey.id}`}
-                        />
-                        <VEDescriptionAsSubtitle descr={survey.description} />
-                        <p className="is-size-7">
-                          Обновлено{' '}
-                          {formatDistanceToNow(parseISO(survey.updatedAt), {
-                            addSuffix: true,
-                            locale: RU,
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <SurveyCard key={survey.id} survey={survey} />
                 ))}
-              </div>
+                <PaginationControls
+                  pgViewName={PG_VIEW_NAME}
+                  pgRes={pgRes}
+                  isFetching={isFetching}
+                  goToPage={this.goToPage}
+                  pageSize={pageSize}
+                  handlePageSizeChange={newPageSize => {
+                    this.setState({ pageSize: newPageSize }, () => {
+                      this.goToPage(1);
+                    });
+                  }}
+                />
+              </>
             )}
           </div>
-        )}
+        </div>
       </div>
     );
   }
 }
+
+const SurveyCard: React.FC<{ survey: SurveyInfo }> = ({ survey }) => {
+  return (
+    <div className="box">
+      <div className="media">
+        <div className="media-left">
+          <span className="icon is-large">
+            <i className="fa fa-2x fa-list-ol has-text-grey-light" />
+          </span>
+        </div>
+        <div className="media-content zero-min-width">
+          <VEPageSecondaryTitle
+            title={survey.name}
+            linkTo={`/public-event-survey/${survey.id}`}
+          />
+          <VEDescriptionAsSubtitle descr={survey.description} />
+          <p className="is-size-7">
+            Обновлено{' '}
+            {formatDistanceToNow(parseISO(survey.updatedAt), {
+              addSuffix: true,
+              locale: RU,
+            })}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};

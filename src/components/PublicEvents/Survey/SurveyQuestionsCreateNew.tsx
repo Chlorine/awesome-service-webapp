@@ -11,13 +11,12 @@ import arrayMove from 'array-move';
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-import { AppState } from '../../../store/state';
 import { Actions as CurrentSurveyActions } from '../../../actions/current-survey';
 
 import api from '../../../back/server-api';
 
 import { UnmountHelper } from '../../../utils/unmount-helper';
-import { history } from '../../../store';
+import { history, RootState } from '../../../store';
 import { FormikPersist } from '../../Common/FormikPersist';
 
 import {
@@ -46,7 +45,7 @@ import {
   makeSchema,
 } from './QuestionHelpers';
 
-const mapStateToProps = (state: AppState) => {
+const mapStateToProps = (state: RootState) => {
   return {
     currentSurvey: state.currentSurvey,
   };
