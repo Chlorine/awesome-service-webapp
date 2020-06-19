@@ -19,7 +19,9 @@ import {
 } from '../Common/Pagination';
 import { Alert } from '../Common/Alert';
 
-declare type Props = {};
+declare type Props = {
+  isArchive: boolean;
+};
 
 declare type State = {
   isFetching: boolean;
@@ -27,18 +29,29 @@ declare type State = {
   events: PublicEventInfo[];
 } & PaginationState;
 
-const PG_VIEW_NAME = 'events_actual';
-
-export default class EventsActual extends React.Component<Props, State> {
+export default class Events extends React.Component<Props, State> {
   uh = new UnmountHelper();
 
-  state: State = {
-    isFetching: true,
-    errorMsg: '',
-    events: [],
-    // pagination:
-    pageSize: getSavedPageSize(PG_VIEW_NAME),
-  };
+  state: State;
+  docTitle: string;
+  pgViewName: string;
+
+  constructor(props: Props, context?: any) {
+    super(props, context);
+
+    const { isArchive } = props;
+
+    this.docTitle = isArchive ? 'Актуальные мероприятия' : 'Архив мероприятий';
+    this.pgViewName = isArchive ? 'events_archive' : 'events_actual';
+
+    this.state = {
+      isFetching: true,
+      errorMsg: '',
+      events: [],
+      // pagination:
+      pageSize: getSavedPageSize(this.pgViewName),
+    };
+  }
 
   componentDidMount(): void {
     this.uh.onMount();
@@ -62,6 +75,7 @@ export default class EventsActual extends React.Component<Props, State> {
         api.events.exec('getEvents', {
           limit: pageSize,
           offset: pageSize * (page - 1),
+          fromArchive: this.props.isArchive,
           __delay: 33,
         }),
       )
@@ -78,6 +92,7 @@ export default class EventsActual extends React.Component<Props, State> {
 
   render() {
     const { isFetching, errorMsg, events, pgRes, pageSize } = this.state;
+    const { isArchive } = this.props;
 
     return (
       <div className="container">
@@ -95,14 +110,18 @@ export default class EventsActual extends React.Component<Props, State> {
             )}
             {!isFetching && !errorMsg && events.length === 0 && (
               <div className="has-text-centered has-text-grey">
-                <p className="has-text-grey">Мероприятий еще нет</p>
+                <p className="has-text-grey">
+                  {isArchive ? 'Нет мероприятий' : 'Мероприятий еще нет'}
+                </p>
                 <br />
-                <Link
-                  className="button is-primary is-outlined"
-                  to="/public-events/new"
-                >
-                  Создать
-                </Link>
+                {!isArchive && (
+                  <Link
+                    className="button is-primary is-outlined"
+                    to="/public-events/new"
+                  >
+                    Создать
+                  </Link>
+                )}
               </div>
             )}
             {events.length > 0 && (
@@ -111,7 +130,7 @@ export default class EventsActual extends React.Component<Props, State> {
                   <EventCard key={event.id} event={event} />
                 ))}
                 <PaginationControls
-                  pgViewName={PG_VIEW_NAME}
+                  pgViewName={this.pgViewName}
                   pgRes={pgRes}
                   isFetching={isFetching}
                   goToPage={this.goToPage}

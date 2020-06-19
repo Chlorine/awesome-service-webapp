@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
+import { UAParser } from 'ua-parser-js';
 
 import {
   VEFetchError,
@@ -93,6 +94,74 @@ class EventVisitorInfo extends React.Component<Props, State> {
     this.uh.onUnmount();
   }
 
+  renderMiscInfoBox() {
+    const visitor = this.props.currentEventVisitor.visitor!;
+
+    const { regRemoteAddr } = visitor;
+    const uaInfo: IUAParser.IResult | null = visitor.uaInfo;
+
+    return (
+      <div className="box">
+        <h3 className="title is-5 has-text-grey">Всякое</h3>
+        <VEObjectPropertyInfo propName="IP-адрес" value={regRemoteAddr} />
+        <br />
+        {uaInfo && (
+          <>
+            {uaInfo.browser && (
+              <>
+                <VEObjectPropertyInfo
+                  propName="Браузер"
+                  value={uaInfo.browser.name}
+                />
+                <VEObjectPropertyInfo
+                  propName="Версия"
+                  value={uaInfo.browser.version}
+                />
+              </>
+            )}
+            {uaInfo.engine && (
+              <>
+                <VEObjectPropertyInfo
+                  propName="Browser engine"
+                  value={uaInfo.engine.name}
+                />
+              </>
+            )}
+            {uaInfo.os && (
+              <>
+                <VEObjectPropertyInfo propName="ОС" value={uaInfo.os.name} />
+                <VEObjectPropertyInfo
+                  propName="Версия"
+                  value={uaInfo.os.version}
+                />
+              </>
+            )}
+            {uaInfo.device &&
+              (uaInfo.device.vendor ||
+                uaInfo.device.model ||
+                uaInfo.device.type) && (
+                <>
+                  <VEObjectPropertyInfo
+                    propName="Производитель устройства"
+                    value={uaInfo.device.vendor}
+                  />
+                  <VEObjectPropertyInfo
+                    propName="Модель устройства"
+                    value={uaInfo.device.model}
+                  />
+                  <VEObjectPropertyInfo
+                    propName="Тип устройства"
+                    value={uaInfo.device.type}
+                  />
+                </>
+              )}
+            {/*<pre>{JSON.stringify(uaInfo, null, 2)}</pre>*/}
+          </>
+        )}
+      </div>
+    );
+  }
+
   renderSurveyAnswersBox() {
     const visitor = this.props.currentEventVisitor.visitor!;
     const { surveyAnswers } = visitor;
@@ -102,7 +171,7 @@ class EventVisitorInfo extends React.Component<Props, State> {
       <div className="box">
         {!survey && (
           <h3 className="title is-6 has-text-grey-lighter">
-            Анкета для мероприятия не задана
+            Анкета для мероприятия не указана
           </h3>
         )}
         {survey && (
@@ -117,7 +186,7 @@ class EventVisitorInfo extends React.Component<Props, State> {
               {survey.questions!.map((q, index) => (
                 <li key={q.id} className="list-item">
                   <article className="media">
-                    <div className="media-left">
+                    <div className="media-left pt-1">
                       <span className="number-circle has-text-grey-light">
                         <span className="has-text-weight-bold">
                           {index + 1}
@@ -145,7 +214,7 @@ class EventVisitorInfo extends React.Component<Props, State> {
     );
   }
 
-  renderCommonInfoBox() {
+  renderMainInfoBox() {
     const visitor = this.props.currentEventVisitor.visitor!;
 
     const {
@@ -181,6 +250,8 @@ class EventVisitorInfo extends React.Component<Props, State> {
             </span>
           </div>
         </div>
+
+        {/* --- Основные штуки ---------- */}
 
         {/* --- ФИО ------------- */}
 
@@ -227,8 +298,9 @@ class EventVisitorInfo extends React.Component<Props, State> {
         {!isFetching && !errorMsg && (
           <div className="columns">
             <div className="column is-12">
-              {this.renderCommonInfoBox()}
+              {this.renderMainInfoBox()}
               {this.renderSurveyAnswersBox()}
+              {this.renderMiscInfoBox()}
             </div>
           </div>
         )}
@@ -269,7 +341,7 @@ const AnswerAsTags: React.FC<{ answers: string[] | null }> = ({ answers }) => {
   return (
     <>
       {answers.map((a, index) => (
-        <span className="tag is-medium is-info is-light mr-2">
+        <span key={index} className="tag is-medium is-info is-light mr-2">
           {_.truncate(a, { length: 48 })}
         </span>
       ))}

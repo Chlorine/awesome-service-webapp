@@ -4,8 +4,7 @@ import { connect } from 'react-redux';
 import { Redirect, Switch } from 'react-router';
 import { Route, RouteComponentProps } from 'react-router-dom';
 
-import EventsActual from './EventsActual';
-import EventsArchive from './EventsArchive';
+import Events from './Events';
 import EventsCreateNew from './EventsCreateNew';
 import Surveys from './Surveys';
 import SurveyCreate from './SurveysCreateNew';
@@ -116,11 +115,20 @@ class EventsRoot extends React.Component<Props, State> {
                     component={() => <Redirect to={`${basePath}/actual`} />}
                   />
 
-                  <Route path={`${basePath}/actual`} component={EventsActual} />
+                  <Route
+                    path={`${basePath}/actual`}
+                    render={props => (
+                      <Events key={1} isArchive={false} {...props} />
+                    )}
+                  />
+
                   <Route
                     path={`${basePath}/archive`}
-                    component={EventsArchive}
+                    render={props => (
+                      <Events key={2} isArchive={true} {...props} />
+                    )}
                   />
+
                   <Route path={`${basePath}/new`} component={EventsCreateNew} />
                   <Route path={`${basePath}/surveys`} component={Surveys} />
                   <Route

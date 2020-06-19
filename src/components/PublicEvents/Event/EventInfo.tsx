@@ -166,7 +166,7 @@ class EventInfo extends React.Component<Props, State> {
                   </span>{' '}
                   {visitorCount === 0 && (
                     <span className="has-text-grey-lighter">
-                      Посетителей пока нет
+                      Нет зарегистрированных посетителей
                     </span>
                   )}
                   {visitorCount > 0 && (
