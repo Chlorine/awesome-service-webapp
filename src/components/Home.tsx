@@ -72,7 +72,7 @@ class Home extends React.Component<Props, State> {
             быстрого ввода данных в виде QR-кода на плакатах. Пример ссылки для
             тестового мероприятия из БД системы:{' '}
             <a
-              href="https://fast-track.cloudtickets.io/start/5ec3c5e7c68b4a441f444c3d"
+              href="https://fast-track.cloudtickets.io/start/5ece26af92a38879e80e7abe"
               target="_blank"
               rel="noopener noreferrer"
             >
