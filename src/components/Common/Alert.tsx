@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const Alert: React.FC<{
-  type: 'danger' | 'warning' | 'success';
+  type: 'danger' | 'warning' | 'success' | 'info';
   onClose?: () => void;
 }> = ({ type, onClose, children }) => {
   return (

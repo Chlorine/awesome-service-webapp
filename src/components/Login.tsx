@@ -17,6 +17,7 @@ import {
 } from './Common/Forms';
 import { Alert } from './Common/Alert';
 import { RootState } from '../store';
+import { VELinkButton } from './Common/ViewElements';
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -33,6 +34,17 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
 
 declare type Props = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>;
+
+const DemoLogin = {
+  allowed: true,
+  email: 'demo@cloudtickets.io',
+  password: 'demo1234',
+};
+
+if (process.env.NODE_ENV !== 'production') {
+  DemoLogin.email = 'electricbathduck@gmail.com';
+  DemoLogin.password = '55555555';
+}
 
 declare type State = {
   isCheckingAuth: boolean;
@@ -84,7 +96,10 @@ class Login extends React.Component<Props, State> {
       .catch(() => {
         authActions.toggleAuthInProgress(false);
         this.setState({ isCheckingAuth: false });
-        this.pswRef && this.pswRef.current && this.pswRef.current.focus();
+
+        if (!DemoLogin.allowed) {
+          this.pswRef && this.pswRef.current && this.pswRef.current.focus();
+        }
       });
   }
 
@@ -173,6 +188,30 @@ class Login extends React.Component<Props, State> {
     );
   };
 
+  demoLogin = () => {
+    this.setState({ errorMsg: '' });
+
+    const { authActions } = this.props;
+    let loginResp: LoginResponse | undefined;
+
+    authActions.toggleAuthInProgress(true);
+
+    api
+      .login(DemoLogin.email, DemoLogin.password)
+      .then(resp => (loginResp = resp))
+      .catch(err => {
+        this.setState({ errorMsg: err.message });
+      })
+      .then(() => {
+        if (loginResp) {
+          const { user, uiSettings } = loginResp;
+          authActions.loginComplete(user, uiSettings, this.pathToRedirect);
+        } else {
+          authActions.toggleAuthInProgress(false);
+        }
+      });
+  };
+
   render() {
     const { isCheckingAuth } = this.state;
 
@@ -192,6 +231,18 @@ class Login extends React.Component<Props, State> {
                 {/* -- Крутилка ----------------------------*/}
                 {isCheckingAuth && <SimpleSpinner />}
                 {/* -- Форма логина -----------------------------------*/}
+                {!isCheckingAuth && DemoLogin.allowed && (
+                  <Alert type="warning">
+                    <div>
+                      <strong>Демо-доступ:</strong>
+                    </div>
+                    <div>{DemoLogin.email}</div>
+                    <div>{DemoLogin.password}</div>
+                    <div>
+                      <VELinkButton text="Войти" onClick={this.demoLogin} />
+                    </div>
+                  </Alert>
+                )}
                 {!isCheckingAuth && (
                   <Formik
                     initialValues={initialValues}
