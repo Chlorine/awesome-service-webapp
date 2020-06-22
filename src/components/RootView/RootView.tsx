@@ -13,7 +13,7 @@ import { CurrentBreakpoint } from '../Common/CurrentBreakpoint';
 import { RootState } from '../../store';
 
 let _SHOW_CURRENT_BREAKPOINT = process.env.NODE_ENV !== 'production';
-_SHOW_CURRENT_BREAKPOINT = true;
+// _SHOW_CURRENT_BREAKPOINT = false;
 
 const mapStateToProps = (state: RootState) => {
   return {
