@@ -109,7 +109,7 @@ class Survey extends React.Component<Props, State> {
     },
     {
       title: 'Ответы',
-      items: [{ title: 'Сводка', linkTo: '/answers' }],
+      items: [{ title: 'Все ответы', linkTo: '/answers' }],
     },
   ];
 

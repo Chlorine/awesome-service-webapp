@@ -111,7 +111,7 @@ class Overview extends React.Component<Props, State> {
                           <p className="heading">
                             {Pluralize.wordFrom(
                               events.actualEventCount,
-                              Words.ActiveEvents,
+                              Words.ActualEvents,
                             )}
                           </p>
                         </div>

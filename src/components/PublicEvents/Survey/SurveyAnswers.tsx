@@ -1,63 +1,158 @@
 import React from 'react';
+import { Dispatch } from 'redux';
+import * as _ from 'lodash';
+import { RootState } from '../../../store';
+import { connect } from 'react-redux';
 
-import { SimpleSpinner } from '../../Common/SimpleSpinner';
+import QuestionAnswers from './QuestionAnswers';
+import { UnmountHelper } from '../../../utils/unmount-helper';
+import api from '../../../back/server-api';
+import { Results } from '../../../back/common/public-events/api';
+import { Alert } from '../../Common/Alert';
+import { formatEventDates } from '../../../utils/format-event-date';
 
-declare type Props = {};
+const mapStateToProps = (state: RootState) => {
+  return {
+    currentSurvey: state.currentSurvey,
+  };
+};
+
+const mapDispatchToProps = (dispatch: Dispatch) => {
+  return {};
+};
+
+declare type Props = ReturnType<typeof mapStateToProps> &
+  ReturnType<typeof mapDispatchToProps> & {
+    questionId?: string;
+  };
 
 declare type State = {
   isFetching: boolean;
   errorMsg: string;
+  events: Results<'getEventsBySurvey'>['events'];
+  eventId: string;
 };
 
-export default class SurveyAnswers extends React.Component<Props, State> {
+class SurveyAnswers extends React.Component<Props, State> {
+  uh = new UnmountHelper();
+
   state: State = {
     isFetching: false,
     errorMsg: '',
+    events: [],
+    eventId: '',
   };
 
   componentDidMount(): void {
-    document.title = 'Ответы на вопросы анкеты';
+    this.uh.onMount();
+
+    const { questionId } = this.props;
+
+    document.title = questionId
+      ? 'Ответы на вопрос анкеты'
+      : 'Ответы на вопросы анкеты';
+
+    this.setState({ isFetching: true });
+    this.uh
+      .wrap(
+        api.events.exec('getEventsBySurvey', {
+          surveyId: this.survey.id,
+          __delay: 300,
+        }),
+      )
+      .then(({ err, results }) => {
+        this.setState({ isFetching: false });
+        if (err) {
+          this.setState({ errorMsg: err.message });
+        } else {
+          const { events } = results;
+          this.setState({ events });
+        }
+      });
+  }
+
+  get survey() {
+    return this.props.currentSurvey.survey!;
+  }
+
+  get questions() {
+    return this.survey.questions!;
+  }
+
+  renderToolbar() {
+    const { eventId, events } = this.state;
+
+    return (
+      <div className="box py-3">
+        <div className="flex-row-left">
+          <div className="is-hidden-mobile pr-4 has-text-weight-bold has-text-grey">
+            Мероприятие
+          </div>
+          <div className="select is-fullwidth">
+            <select
+              value={eventId}
+              onChange={e => this.setState({ eventId: e.currentTarget.value })}
+            >
+              <option value="">Все</option>
+              {events.map((event, index) => (
+                <option key={event.id} value={event.id}>
+                  {`${_.truncate(event.name, {
+                    length: 32,
+                  })} (${formatEventDates(event.start, event.end)})`}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   render() {
-    const { isFetching, errorMsg } = this.state;
+    const { isFetching, errorMsg, eventId } = this.state;
+    const { questionId } = this.props;
 
     return (
       <div className="container">
         {isFetching && (
-          <div className="columns">
-            <div className="column is-12">
-              <SimpleSpinner text="Загрузка..." />
-            </div>
+          <div className="flex-row-centered has-text-grey-light has-text-weight-bold">
+            <span className="loader is-loading mr-3" /> Загрузка...
           </div>
         )}
         {errorMsg && (
-          <div className="columns">
-            <div className="column is-12">
-              <div className="notification is-danger is-light">
-                Не удалось загрузить данные: {errorMsg}
-              </div>
-            </div>
-          </div>
+          <Alert type="danger">
+            Не удалось загрузить мероприятия: {errorMsg}
+          </Alert>
         )}
         {!isFetching && !errorMsg && (
-          <div className="columns">
-            <div className="column is-12">
-              <div className="box--">
-                <h3 className="title is-5 has-text-grey-light">
-                  Ответы на вопросы анкеты
-                </h3>
-                <h4 className="subtitle is-6 has-text-grey-lighter">
-                  В разработке{' '}
-                  <span className="icon">
-                    <i className="fa fa-meh-o" />
-                  </span>
-                </h4>
+          <>
+            {this.questions.length === 0 && (
+              <div className="has-text-centered">
+                <p className="has-text-grey">
+                  Ответов нет (в анкете еще нет вопросов)
+                </p>
               </div>
-            </div>
-          </div>
+            )}
+            {this.questions.length > 0 && (
+              <>
+                {this.renderToolbar()}
+                {this.questions
+                  .filter(q => (questionId ? q.id === questionId : true))
+                  .map(q => (
+                    <QuestionAnswers
+                      key={q.id}
+                      question={q}
+                      eventId={eventId}
+                      hideTitle={!!questionId}
+                    />
+                  ))}
+              </>
+            )}
+          </>
         )}
       </div>
     );
   }
 }
+
+export default connect(mapStateToProps, mapDispatchToProps)(SurveyAnswers);

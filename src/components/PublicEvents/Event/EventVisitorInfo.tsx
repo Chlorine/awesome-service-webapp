@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
-import { UAParser } from 'ua-parser-js';
+import 'ua-parser-js';
 
 import {
   VEFetchError,

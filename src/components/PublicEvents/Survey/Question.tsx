@@ -22,7 +22,9 @@ import QuestionEdit from './QuestionEdit';
 import QuestionRemove from './QuestionRemove';
 
 import { Actions as CurrentQuestionActions } from '../../../actions/current-question';
+import { Actions as CurrentSurveyActions } from '../../../actions/current-survey';
 import { RootState } from '../../../store';
+import SurveyAnswers from './SurveyAnswers';
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -38,6 +40,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       CurrentQuestionActions,
       dispatch,
     ),
+    currentSurveyActions: bindActionCreators(CurrentSurveyActions, dispatch),
   };
 };
 
@@ -70,24 +73,32 @@ class Question extends React.Component<Props, State> {
     this.props.currentQuestionActions.infoReset();
     this.setState({ isFetching: true, fetchErrorMsg: '' });
 
-    this.uh
-      .wrap(
-        api.events.exec('getSurveyQuestion', {
-          id: this.questionId,
-          __delay: 0,
-          __genErr: false,
-        }),
-      )
-      .then(({ err, results }) => {
-        this.setState({ isFetching: false });
-        if (err) {
-          this.setState({ fetchErrorMsg: err.message });
-        } else {
-          const { question } = results;
-          this.props.currentQuestionActions.infoLoaded(question);
-          document.title = question.text;
-        }
-      });
+    this.uh.wrap(this.fetchData()).then(({ err, results }) => {
+      this.setState({ isFetching: false });
+      if (err) {
+        this.setState({ fetchErrorMsg: err.message });
+      } else {
+        const { question, survey } = results;
+        this.props.currentSurveyActions.infoLoaded(survey);
+        this.props.currentQuestionActions.infoLoaded(question);
+        document.title = question.text;
+      }
+    });
+  }
+
+  async fetchData() {
+    const { question } = await api.events.exec('getSurveyQuestion', {
+      id: this.questionId,
+    });
+
+    const { survey } = await api.events.exec('getSurvey', {
+      id: question.surveyId,
+    });
+
+    return {
+      question,
+      survey,
+    };
   }
 
   componentWillUnmount(): void {
@@ -109,6 +120,15 @@ class Question extends React.Component<Props, State> {
         },
       ],
     },
+    {
+      title: 'Ответы',
+      items: [
+        {
+          title: 'Статистика',
+          linkTo: '/answers',
+        },
+      ],
+    },
   ];
 
   renderSwitch(basePath: string) {
@@ -121,6 +141,12 @@ class Question extends React.Component<Props, State> {
         />
         <Route path={`${basePath}/edit`} component={QuestionEdit} />
         <Route path={`${basePath}/remove`} component={QuestionRemove} />
+        <Route
+          path={`${basePath}/answers`}
+          render={props => (
+            <SurveyAnswers questionId={this.questionId} {...props} />
+          )}
+        />
         <Route
           component={() => (
             <small className="has-text-grey">

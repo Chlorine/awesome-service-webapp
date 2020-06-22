@@ -4,12 +4,14 @@ import {
   SortableElement,
   SortableHandle,
 } from 'react-sortable-hoc';
+import * as yup from 'yup';
+import * as _ from 'lodash';
 
 import { SurveyQuestionInfo } from '../../../back/common/public-events/survey-question';
 import { ArrayHelpers, FieldProps, Field as FormikField } from 'formik';
 
 import './QuestionHelpers.scss';
-import * as yup from 'yup';
+
 import { VELinkButton } from '../../Common/ViewElements';
 
 export type AnswerType = SurveyQuestionInfo['answerType'];
@@ -185,6 +187,13 @@ export function makeSchema() {
             }
 
             return arr.length >= 2;
+          },
+        )
+        .test(
+          'contains-no-duplicates',
+          'Варианты ответов не должны повторяться',
+          function(arr) {
+            return arr.length === _.uniqBy(arr, 'text').length;
           },
         ),
     })
