@@ -48,6 +48,30 @@ export class Utils {
       window.setTimeout(resolve, ms);
     });
   }
+
+  static async readFileAsDataURL(file: File): Promise<string> {
+    const r = new FileReader();
+    return new Promise<string>((resolve, reject) => {
+      r.onabort = () => reject(new Error('Reading interrupted'));
+      r.onerror = () => reject(new Error('Reading failed'));
+      r.onload = (ev: ProgressEvent<FileReader>) => {
+        const res = ev.target?.result;
+        if (typeof res === 'string') resolve(res);
+        else reject(new Error('Unknown error'));
+      };
+
+      r.readAsDataURL(file);
+    });
+  }
+
+  static async isValidImageSrc(src: string): Promise<boolean> {
+    return new Promise<boolean>(resolve => {
+      const img = new Image();
+      img.addEventListener('load', () => resolve(!!img.width));
+      img.addEventListener('error', () => resolve(false));
+      img.src = src;
+    });
+  }
 }
 
 export type GetElementType<T extends Array<any>> = T extends (infer U)[]

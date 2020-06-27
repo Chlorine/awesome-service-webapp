@@ -22,7 +22,16 @@ export type ToggleAuthInProgress = {
   inProgress: boolean;
 };
 
-export type ActionType = LoginComplete | LogoutComplete | ToggleAuthInProgress;
+export type UpdateUserInfo = {
+  type: '@auth/updateUserInfo';
+  user: UserInfo;
+};
+
+export type ActionType =
+  | LoginComplete
+  | LogoutComplete
+  | ToggleAuthInProgress
+  | UpdateUserInfo;
 
 export const Actions = {
   loginComplete: (
@@ -56,6 +65,14 @@ export const Actions = {
       dispatch({
         type: '@auth/toggleAuthInProgress',
         inProgress,
+      });
+    };
+  },
+  updateUserInfo: (user: UserInfo) => {
+    return (dispatch: Dispatch<ActionType>) => {
+      dispatch({
+        type: '@auth/updateUserInfo',
+        user,
       });
     };
   },

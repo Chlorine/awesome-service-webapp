@@ -64,6 +64,7 @@ declare type State = {
   submitErrorMsg: string;
   submitOkMsgVisible: boolean;
   somethingChanged: boolean;
+  sortingInProgress: boolean;
 };
 
 type FormValues = QuestionFormValues;
@@ -77,6 +78,7 @@ class QuestionEdit extends React.Component<Props, State> {
     submitErrorMsg: '',
     submitOkMsgVisible: false,
     somethingChanged: false,
+    sortingInProgress: false,
   };
 
   schema = makeSchema();
@@ -151,7 +153,12 @@ class QuestionEdit extends React.Component<Props, State> {
 
   renderForm = (fp: FormikProps<FormValues>) => {
     const { handleSubmit, isSubmitting, values, handleChange, handleBlur } = fp;
-    const { submitErrorMsg, submitOkMsgVisible, somethingChanged } = this.state;
+    const {
+      submitErrorMsg,
+      submitOkMsgVisible,
+      somethingChanged,
+      sortingInProgress,
+    } = this.state;
 
     return (
       <form noValidate onSubmit={handleSubmit}>
@@ -241,7 +248,11 @@ class QuestionEdit extends React.Component<Props, State> {
                       lockAxis={'y'}
                       shouldCancelStart={() => isSubmitting}
                       useDragHandle={true}
+                      onSortStart={() =>
+                        this.setState({ sortingInProgress: true })
+                      }
                       onSortEnd={({ newIndex, oldIndex }) => {
+                        this.setState({ sortingInProgress: false });
                         if (oldIndex !== newIndex) {
                           fp.setFieldValue(
                             'answers',
@@ -255,6 +266,7 @@ class QuestionEdit extends React.Component<Props, State> {
                         arrayHelpers.push(makeNewAnswerVariant());
                         this.onFormValueChange();
                       }}
+                      sortingInProgress={sortingInProgress}
                     />
                   </>
                 );

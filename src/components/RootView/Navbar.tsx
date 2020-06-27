@@ -8,6 +8,7 @@ import { AuthState } from '../../store/state';
 
 import classNames from 'classnames';
 import { CurrentBreakpoint } from '../Common/CurrentBreakpoint';
+import { NameFormatter } from '../../utils/name-formatter';
 
 let _SHOW_CURRENT_BREAKPOINT = process.env.NODE_ENV !== 'production';
 _SHOW_CURRENT_BREAKPOINT = false;
@@ -204,17 +205,31 @@ const NavbarEnd: React.FC<{
         <div className="navbar-item has-dropdown is-hoverable">
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <a className="navbar-link" href="#">
-            <span className="icon">
-              <i className="fa fa-user-circle" />
-            </span>
+            {auth.user.avatar && (
+              <figure className="image is-32x32">
+                <img
+                  className="is-rounded avatar-with-shadow"
+                  src={auth.user.avatar}
+                  alt=""
+                  style={{ maxHeight: 'unset' }}
+                />
+              </figure>
+            )}
+            {!auth.user.avatar && (
+              <span className="icon">
+                <i className="fa fa-user-circle" />
+              </span>
+            )}
           </a>
           {ddAvailable && (
             <div className="navbar-dropdown is-right">
-              <div className="navbar-item">
+              <div className="navbar-item has-text-right">
                 <p className="is-size-7 has-text-grey-light">
-                  <strong>Выполнен вход</strong>
+                  {auth.user.email}
                   <br />
-                  {auth.user?.email}
+                  <strong className="is-size-6 has-text-grey">
+                    {new NameFormatter(auth.user).getAsIOF()}
+                  </strong>
                 </p>
               </div>
               <hr className="navbar-divider" />
@@ -223,6 +238,9 @@ const NavbarEnd: React.FC<{
                 to={'/profile'}
                 onClick={onDDNavItemClick}
               >
+                <span className="icon mr-2">
+                  <i className="fa fa-user-circle" />
+                </span>{' '}
                 Учетная запись
               </Link>
               <hr className="navbar-divider" />
@@ -231,6 +249,9 @@ const NavbarEnd: React.FC<{
                 to={'/logout'}
                 onClick={onDDNavItemClick}
               >
+                <span className="icon mr-2">
+                  <i className="fa fa-sign-out" />
+                </span>{' '}
                 Выход
               </NavLink>
             </div>

@@ -38,17 +38,27 @@ export const ANSWER_TYPE_NAMES: {
   SomeOf: 'Несколько вариантов из списка',
 };
 
-export const AnswerDragHandle = SortableHandle(() => (
-  <span className="icon answer-drag-handle">
-    <i className="fa fa-bars has-text-grey-lighter cursor-row-resize" />
-  </span>
-));
+declare type DragHandleProps = {
+  sortingInProgress: boolean;
+};
+
+export const AnswerDragHandle = SortableHandle(
+  ({ sortingInProgress }: DragHandleProps) => (
+    <div
+      className="icon answer-drag-handle has-tooltip-arrow"
+      data-tooltip={sortingInProgress ? undefined : 'Переместить'}
+    >
+      <i className="fa fa-bars has-text-grey-lighter cursor-row-resize" />
+    </div>
+  ),
+);
 
 export type AnswerSortableElementProps = {
   currIndex: number;
   arrayHelpers: ArrayHelpers;
   showDragHandle: boolean;
   onChange?: () => void;
+  sortingInProgress: boolean;
 };
 
 export const AnswerSortableElement = SortableElement(
@@ -57,6 +67,7 @@ export const AnswerSortableElement = SortableElement(
     arrayHelpers,
     showDragHandle,
     onChange,
+    sortingInProgress,
   }: AnswerSortableElementProps) => {
     return (
       <li className="list-item-answer">
@@ -77,16 +88,23 @@ export const AnswerSortableElement = SortableElement(
                       onChange && onChange();
                     }}
                   />
-                  <button
-                    type="button"
-                    className="delete delete-answer has-background-warning"
-                    disabled={form.isSubmitting}
-                    onClick={() => {
-                      arrayHelpers.remove(currIndex);
-                      onChange && onChange();
-                    }}
-                  />
-                  {showDragHandle && <AnswerDragHandle />}
+                  <div
+                    data-tooltip={sortingInProgress ? undefined : 'Убрать'}
+                    className="has-tooltip-dark has-tooltip-arrow"
+                  >
+                    <button
+                      type="button"
+                      className="delete delete-answer has-background-warning"
+                      disabled={form.isSubmitting}
+                      onClick={() => {
+                        arrayHelpers.remove(currIndex);
+                        onChange && onChange();
+                      }}
+                    />
+                  </div>
+                  {showDragHandle && (
+                    <AnswerDragHandle sortingInProgress={sortingInProgress} />
+                  )}
                 </div>
                 {meta.touched && meta.error && (
                   <p className="help has-text-danger mt-1">{meta.error}</p>
@@ -105,6 +123,7 @@ export type AnswersSortableContainerProps = {
   arrayHelpers: ArrayHelpers;
   onChange?: () => void;
   handleAdd: () => void;
+  sortingInProgress: boolean;
 };
 
 export const AnswersSortableContainer = SortableContainer(
@@ -113,6 +132,7 @@ export const AnswersSortableContainer = SortableContainer(
     arrayHelpers,
     onChange,
     handleAdd,
+    sortingInProgress,
   }: AnswersSortableContainerProps) => {
     return (
       <ul className="list-answers">
@@ -129,6 +149,7 @@ export const AnswersSortableContainer = SortableContainer(
             arrayHelpers={arrayHelpers}
             showDragHandle={answers.length > 1}
             onChange={onChange}
+            sortingInProgress={sortingInProgress}
           />
         ))}
       </ul>

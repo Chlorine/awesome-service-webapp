@@ -64,6 +64,7 @@ declare type State = {
   isFetching: boolean;
   fetchErrorMsg: string;
   submitErrorMsg: string;
+  sortingInProgress: boolean;
 };
 
 type FormValues = QuestionFormValues;
@@ -76,6 +77,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
     isFetching: false,
     fetchErrorMsg: '',
     submitErrorMsg: '',
+    sortingInProgress: false,
   };
 
   schema = makeSchema();
@@ -139,7 +141,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
 
   renderForm = (fp: FormikProps<FormValues>) => {
     const { handleSubmit, isSubmitting, values, handleChange, handleBlur } = fp;
-    const { submitErrorMsg } = this.state;
+    const { submitErrorMsg, sortingInProgress } = this.state;
 
     return (
       <form noValidate onSubmit={handleSubmit}>
@@ -224,7 +226,11 @@ class SurveysCreateNew extends React.Component<Props, State> {
                       lockAxis={'y'}
                       shouldCancelStart={() => isSubmitting}
                       useDragHandle={true}
+                      onSortStart={() =>
+                        this.setState({ sortingInProgress: true })
+                      }
                       onSortEnd={({ newIndex, oldIndex }) => {
+                        this.setState({ sortingInProgress: false });
                         if (oldIndex !== newIndex) {
                           fp.setFieldValue(
                             'answers',
@@ -235,6 +241,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
                       handleAdd={() =>
                         arrayHelpers.push(makeNewAnswerVariant())
                       }
+                      sortingInProgress={sortingInProgress}
                     />
                   </>
                 );

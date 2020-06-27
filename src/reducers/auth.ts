@@ -24,6 +24,9 @@ export const authReducer = produce(
       case '@auth/toggleAuthInProgress':
         draft.inProgress = action.inProgress;
         break;
+      case '@auth/updateUserInfo':
+        draft.user = action.user;
+        break;
     }
 
     return draft;

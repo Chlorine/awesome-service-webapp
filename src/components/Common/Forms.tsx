@@ -14,6 +14,7 @@ export interface InputProps<Values, FieldName extends keyof Values> {
   leftIcon?: string;
   rightButtonIcon?: string;
   onButtonClick?: (e: any) => void;
+  rightButtonTooltip?: string;
   children?: any;
   isTextarea?: boolean;
   rows?: number;
@@ -31,6 +32,7 @@ export function TextInputField<Values, FieldName extends keyof Values>({
   leftIcon,
   rightButtonIcon,
   onButtonClick,
+  rightButtonTooltip,
   children,
   isTextarea,
   rows,
@@ -95,7 +97,10 @@ export function TextInputField<Values, FieldName extends keyof Values>({
           {children}
         </div>
         {!!rightButtonIcon && (
-          <div className="control">
+          <div
+            className="control has-tooltip-left has-tooltip-arrow"
+            data-tooltip={rightButtonTooltip}
+          >
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
               href={'#'}
@@ -149,6 +154,7 @@ export function PasswordInputField<Values, FieldName extends keyof Values>({
           enableEyeButton ? eyeIcon[pswVisible ? 0 : 1] : undefined
         }
         onButtonClick={() => setPswVisible(!pswVisible)}
+        rightButtonTooltip={pswVisible ? 'Спрятать' : 'Показать'}
       >
         {enableStrengthMeter && values[props.name] && (
           <p className="help">

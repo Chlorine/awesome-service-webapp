@@ -1,11 +1,9 @@
-import { ApiResults, GenericObject } from './common';
+import { ApiResults, GenericObject, UploadParamsBase } from './common';
 
 export const DEV_API_PORT = Number(process.env.REACT_APP_DEV_API_PORT || 3301);
 export const DEV_API_HOSTNAME = window.location.hostname;
 
 // https://developer.mozilla.org/ru/docs/Web/API/Fetch_API/Using_Fetch
-
-// `https://api.${window.location.hostname}/api`
 
 export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -85,5 +83,69 @@ export class ServerAPIBase {
     return json;
   }
 
-  // private static async processResponse
+  /**
+   * Залить нечто на сервер
+   * Если по params.type подразумевается, то вернется непустой publicUrl
+   *
+   * @param params
+   * @param blob
+   */
+  async upload(
+    params: UploadParamsBase,
+    blob: Blob,
+  ): Promise<{ publicUrl?: string }> {
+    const tm = new Date().getTime();
+
+    const fd = new FormData();
+    fd.append('type', params.type);
+    fd.append('objectId', params.objectId);
+    fd.append('file', blob);
+
+    const fetchOpts: RequestInit = {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        // content-type самовозникнет
+      },
+      credentials: 'include',
+      body: fd,
+    };
+
+    let response: Response;
+
+    try {
+      response = await fetch(ServerAPIBase.URL + '/upload', fetchOpts);
+    } catch (err) {
+      console.error(`API.Upload: ERROR: ${err.message}`);
+      throw new Error('Нет ответа от сервера');
+    }
+
+    const { ok, status, statusText } = response;
+
+    let json: ApiResults & { publicUrl?: string };
+
+    // у нас должно быть application/json даже когда не "200 OK"
+
+    try {
+      json = await response.json();
+    } catch (err) {
+      json = {
+        success: false,
+        errorMsg: ok
+          ? `Некорректный ответ сервера (JSON parsing failed (${err}))`
+          : `Не удалось получить ответ от сервера (${status} ${statusText})`,
+      };
+    }
+
+    const et = `${new Date().getTime() - tm} ms`;
+
+    if (!json.success) {
+      console.error(`API.Upload: ERROR: ${json.errorMsg} (${et})`);
+      throw new Error(json.errorMsg || 'Неизвестная ошибка');
+    }
+
+    console.log(`API.Upload: ${status} ${statusText} (${et})`, json);
+
+    return json;
+  }
 }

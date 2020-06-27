@@ -50,6 +50,7 @@ declare type State = {
   questions: SurveyQuestionInfo[];
   isSavingDisplayOrder: boolean;
   savingErrorMsg: string;
+  sortingInProgress: boolean;
 };
 
 declare type DragHandleProps = {
@@ -73,6 +74,7 @@ declare type QuestionSortableElementProps = {
   currIndex: number;
   isSavingDisplayOrder: boolean;
   showDragHandle: boolean;
+  sortingInProgress: boolean;
 };
 
 const QuestionSortableElement = SortableElement(
@@ -81,6 +83,7 @@ const QuestionSortableElement = SortableElement(
     currIndex,
     isSavingDisplayOrder,
     showDragHandle,
+    sortingInProgress,
   }: QuestionSortableElementProps) => {
     const { id, text, description, answerType } = value;
 
@@ -108,7 +111,10 @@ const QuestionSortableElement = SortableElement(
               </p>
             </div>
             {showDragHandle && (
-              <div className="media-right">
+              <div
+                className="media-right has-tooltip-arrow has-tooltip-left"
+                data-tooltip={sortingInProgress ? undefined : 'Переместить'}
+              >
                 <QuestionDragHandle
                   isSavingDisplayOrder={isSavingDisplayOrder}
                 />
@@ -124,10 +130,15 @@ const QuestionSortableElement = SortableElement(
 declare type QuestionsSortableContainerProps = {
   items: SurveyQuestionInfo[];
   isSavingDisplayOrder: boolean;
+  sortingInProgress: boolean;
 };
 
 const QuestionsSortableContainer = SortableContainer(
-  ({ items, isSavingDisplayOrder }: QuestionsSortableContainerProps) => {
+  ({
+    items,
+    isSavingDisplayOrder,
+    sortingInProgress,
+  }: QuestionsSortableContainerProps) => {
     return (
       <ul className="ul-sortable-container">
         {items.map((q, index) => (
@@ -138,6 +149,7 @@ const QuestionsSortableContainer = SortableContainer(
             currIndex={index}
             isSavingDisplayOrder={isSavingDisplayOrder}
             showDragHandle={items.length > 1}
+            sortingInProgress={sortingInProgress}
           />
         ))}
       </ul>
@@ -154,10 +166,13 @@ class SurveyQuestions extends React.Component<Props, State> {
     questions: [],
     isSavingDisplayOrder: false,
     savingErrorMsg: '',
+    sortingInProgress: false,
   };
 
   onSortEnd = (sortEnd: SortEnd) => {
     // console.log('onSortEnd', sortEnd);
+
+    this.setState({ sortingInProgress: false });
 
     const { oldIndex, newIndex } = sortEnd;
     const survey = this.props.currentSurvey.survey!;
@@ -263,11 +278,13 @@ class SurveyQuestions extends React.Component<Props, State> {
               <div className="column is-12">
                 <QuestionsSortableContainer
                   items={questions}
+                  onSortStart={() => this.setState({ sortingInProgress: true })}
                   onSortEnd={this.onSortEnd}
                   useDragHandle={true}
                   isSavingDisplayOrder={isSavingDisplayOrder}
                   shouldCancelStart={() => isSavingDisplayOrder}
                   lockAxis={'y'}
+                  sortingInProgress={this.state.sortingInProgress}
                 />
               </div>
             )}

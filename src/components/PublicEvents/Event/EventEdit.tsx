@@ -51,7 +51,7 @@ declare type FormValues = {
   name: string;
   description?: string;
   placeName: string;
-  placeAddress: string;
+  placeAddress?: string;
   start: Date;
   end: Date;
   surveyId?: string;
@@ -86,7 +86,6 @@ class EventEdit extends React.Component<Props, State> {
       .trim(),
     placeAddress: yup
       .string()
-      .required()
       .max(512)
       .trim(),
     start: yup.date().required(),

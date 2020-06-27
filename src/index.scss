@@ -1,14 +1,14 @@
 @charset "utf-8";
 
 @import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
-// @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap');
-
 $family-sans-serif: 'Nunito', sans-serif;
-$roboto-condensed: 'Roboto Condensed';
 
-.text-condensed {
-  font-family: $roboto-condensed;
-}
+// @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap');
+//$roboto-condensed: 'Roboto Condensed';
+//
+//.text-condensed {
+//  font-family: $roboto-condensed;
+//}
 
 $navbar-breakpoint: 769px;
 $nice-active: rgba(24, 121, 107, 0.67);
@@ -18,6 +18,9 @@ $pagination-current-border-color: $nice-active;
 $hero-body-padding: 1.75rem 1.5rem !default
 
 @import '~bulma/bulma.sass';
+
+$tooltip-padding: .25rem .5rem !default
+@import '~@creativebulma/bulma-tooltip/src/sass/index';
 
 $loader-color: $grey-lightest;
 @import "scss/loaders";
@@ -68,6 +71,8 @@ $loader-color: $grey-lightest;
   margin-top: 1rem;
 }
 
+// misc
+
 .flex-row-centered {
   display: flex;
   flex-direction: row;
@@ -80,4 +85,8 @@ $loader-color: $grey-lightest;
   flex-direction: row;
   justify-content: left;
   align-items: center;
+}
+
+.avatar-with-shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }

@@ -58,7 +58,7 @@ export class ServerAPI extends ServerAPIBase {
       '_checkAuth',
       {
         __delay: 0,
-        ...dbgParams
+        ...dbgParams,
       },
       '/check-auth',
     );
@@ -93,7 +93,7 @@ export class ServerAPI extends ServerAPIBase {
         ...dbgParams,
       },
       '/logout',
-      'GET'
+      'GET',
     );
   }
 
