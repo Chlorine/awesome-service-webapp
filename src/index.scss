@@ -70,6 +70,10 @@ $loader-color: $grey-lightest;
   cursor: row-resize;
 }
 
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+
 .submit-button {
   margin-top: 1rem;
 }

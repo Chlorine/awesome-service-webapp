@@ -6,6 +6,7 @@ import {
 } from 'react-sortable-hoc';
 import * as yup from 'yup';
 import * as _ from 'lodash';
+import classNames from 'classnames';
 
 import { SurveyQuestionInfo } from '../../../back/common/public-events/survey-question';
 import { ArrayHelpers, FieldProps, Field as FormikField } from 'formik';
@@ -40,15 +41,21 @@ export const ANSWER_TYPE_NAMES: {
 
 declare type DragHandleProps = {
   sortingInProgress: boolean;
+  sortingAllowed: boolean;
 };
 
 export const AnswerDragHandle = SortableHandle(
-  ({ sortingInProgress }: DragHandleProps) => (
+  ({ sortingInProgress, sortingAllowed }: DragHandleProps) => (
     <div
       className="icon answer-drag-handle has-tooltip-arrow"
       data-tooltip={sortingInProgress ? undefined : 'Переместить'}
     >
-      <i className="fa fa-bars has-text-grey-lighter cursor-row-resize" />
+      <i
+        className={classNames('fa fa-bars has-text-grey-lighter', {
+          'cursor-row-resize': sortingAllowed,
+          'cursor-not-allowed': !sortingAllowed,
+        })}
+      />
     </div>
   ),
 );
@@ -94,7 +101,10 @@ export const AnswerSortableElement = SortableElement(
                   >
                     <button
                       type="button"
-                      className="delete delete-answer has-background-warning"
+                      className={classNames('delete delete-answer', {
+                        'has-background-warning': !form.isSubmitting,
+                        'cursor-not-allowed': form.isSubmitting,
+                      })}
                       disabled={form.isSubmitting}
                       onClick={() => {
                         arrayHelpers.remove(currIndex);
@@ -103,7 +113,10 @@ export const AnswerSortableElement = SortableElement(
                     />
                   </div>
                   {showDragHandle && (
-                    <AnswerDragHandle sortingInProgress={sortingInProgress} />
+                    <AnswerDragHandle
+                      sortingInProgress={sortingInProgress}
+                      sortingAllowed={!form.isSubmitting}
+                    />
                   )}
                 </div>
                 {meta.touched && meta.error && (

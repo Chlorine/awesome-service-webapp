@@ -95,13 +95,21 @@ export const VEDescriptionAsSubtitle: React.FC<{
   );
 };
 
-export const VELinkButton: React.FC<{ text: string; onClick: () => void }> = ({
-  text,
-  onClick,
-}) => {
+export const VELinkButton: React.FC<{
+  text: string;
+  onClick: () => void;
+  disabled?: boolean;
+}> = ({ text, onClick, disabled }) => {
   return (
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
-    <a className="has-text-link" onClick={onClick}>
+    <a
+      className={classNames('', {
+        'has-text-link': !disabled,
+        'has-text-grey': disabled,
+        'cursor-not-allowed': disabled,
+      })}
+      onClick={() => !disabled && onClick()}
+    >
       {text}
     </a>
   );

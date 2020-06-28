@@ -233,6 +233,7 @@ class QuestionEdit extends React.Component<Props, State> {
                           <div className="column has-text-right">
                             <VELinkButton
                               text="Добавить"
+                              disabled={isSubmitting}
                               onClick={() => {
                                 arrayHelpers.push(makeNewAnswerVariant());
                                 this.onFormValueChange();

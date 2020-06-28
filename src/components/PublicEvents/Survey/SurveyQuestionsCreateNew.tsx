@@ -118,7 +118,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
           answerVariants:
             answerType !== 'YesNo' ? answers.map(a => a.text) : undefined,
           // dbg:
-          __delay: 0,
+          __delay: 100,
           __genErr: false,
         }),
       )
@@ -212,6 +212,7 @@ class SurveysCreateNew extends React.Component<Props, State> {
                           <div className="column has-text-right">
                             <VELinkButton
                               text="Добавить"
+                              disabled={isSubmitting}
                               onClick={() =>
                                 arrayHelpers.push(makeNewAnswerVariant())
                               }

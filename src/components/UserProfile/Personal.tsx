@@ -4,6 +4,8 @@ import { Formik, FormikProps, FormikHelpers } from 'formik';
 import { format, getDaysInMonth, parse, startOfDay } from 'date-fns';
 import { bindActionCreators, Dispatch } from 'redux';
 import loadImage from 'blueimp-load-image';
+import { connect } from 'react-redux';
+import classNames from 'classnames';
 
 import api from '../../back/server-api';
 
@@ -25,7 +27,6 @@ import { VEPageSecondaryTitle } from '../Common/ViewElements';
 import ImageCropper from '../Common/ImageCropper';
 import { RootState } from '../../store';
 import { Actions as AuthActions } from '../../actions/auth';
-import { connect } from 'react-redux';
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -414,14 +415,20 @@ class Personal extends React.Component<Props, State> {
                   >
                     <button
                       type="button"
-                      className="delete has-background-warning"
+                      className={classNames('delete', {
+                        'has-background-warning': !isSubmitting,
+                        'cursor-not-allowed': isSubmitting,
+                      })}
+                      disabled={isSubmitting}
                       onClick={() => {
-                        setFieldValue('withBirthday', false);
-                        const defaultBD = this.userBirthday;
-                        setFieldValue('bdDay', defaultBD.bdDay);
-                        setFieldValue('bdMonth', defaultBD.bdMonth);
-                        setFieldValue('bdYear', defaultBD.bdYear);
-                        this.onFormValueChange();
+                        if (!isSubmitting) {
+                          setFieldValue('withBirthday', false);
+                          const defaultBD = this.userBirthday;
+                          setFieldValue('bdDay', defaultBD.bdDay);
+                          setFieldValue('bdMonth', defaultBD.bdMonth);
+                          setFieldValue('bdYear', defaultBD.bdYear);
+                          this.onFormValueChange();
+                        }
                       }}
                     />
                   </div>

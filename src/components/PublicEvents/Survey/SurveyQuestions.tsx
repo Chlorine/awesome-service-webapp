@@ -61,7 +61,7 @@ const QuestionDragHandle = SortableHandle(
   ({ isSavingDisplayOrder }: DragHandleProps) => (
     <span className="icon">
       {isSavingDisplayOrder ? (
-        <i className="loader is-loading" />
+        <i className="loader is-loading cursor-not-allowed" />
       ) : (
         <i className="fa fa-bars has-text-grey-lighter cursor-row-resize" />
       )}
@@ -113,7 +113,11 @@ const QuestionSortableElement = SortableElement(
             {showDragHandle && (
               <div
                 className="media-right has-tooltip-arrow has-tooltip-left"
-                data-tooltip={sortingInProgress ? undefined : 'Переместить'}
+                data-tooltip={
+                  sortingInProgress || isSavingDisplayOrder
+                    ? undefined
+                    : 'Переместить'
+                }
               >
                 <QuestionDragHandle
                   isSavingDisplayOrder={isSavingDisplayOrder}
@@ -189,7 +193,7 @@ class SurveyQuestions extends React.Component<Props, State> {
           api.events.exec('setSurveyQuestionsSortOrder', {
             surveyId: survey.id,
             questionIDs: questions.map(q => q.id),
-            __delay: 0,
+            __delay: 100,
             __genErr: false,
           }),
         )
