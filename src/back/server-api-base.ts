@@ -1,3 +1,4 @@
+import { omit } from 'lodash';
 import { ApiResults, GenericObject, UploadParamsBase } from './common';
 
 export const DEV_API_PORT = Number(process.env.REACT_APP_DEV_API_PORT || 3301);
@@ -22,7 +23,10 @@ export class ServerAPIBase {
     const action = body.action || '';
     const target = body.target || 'core';
 
-    console.log(`API: ${method} ${ServerAPIBase.URL + path}`, body);
+    console.log(
+      `API: ${method} ${ServerAPIBase.URL + path}`,
+      omit(body, ['password', 'newPassword', 'oldPassword']),
+    );
 
     if (body.__delay) {
       await new Promise(resolve => setTimeout(resolve, body.__delay));
