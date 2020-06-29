@@ -110,7 +110,7 @@ class Question extends React.Component<Props, State> {
       title: 'Вопрос',
       items: [
         {
-          title: 'Изменить параметры',
+          title: 'Параметры',
           linkTo: '/edit',
         },
         {

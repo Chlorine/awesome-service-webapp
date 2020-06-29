@@ -101,86 +101,100 @@ class EventInfo extends React.Component<Props, State> {
   render() {
     const { isFetching, errorMsg, survey, visitorCount } = this.state;
     const event = this.props.currentEvent.event!;
+    const { name, description, start, end, place, banner } = event;
 
     return (
       <div className="container">
         <VEFetchingSpinner isFetching={isFetching} />
         <VEFetchError msg={errorMsg} />
         {!isFetching && !errorMsg && (
-          <div className="columns">
-            <div className="column is-12">
-              <div className="box">
-                {/* --- Название и описание -------------- */}
-
-                <h3 className="title is-4 has-text-grey">{event.name}</h3>
-                <VEDescriptionAsSubtitle descr={event.description} />
-
-                {/* --- Даты -------------- */}
-
-                <p className="is-size-5 has-text-weight-bold has-text-grey">
-                  <span className="icon has-text-primary">
-                    <i className="fa fa-calendar" />
-                  </span>{' '}
-                  {formatEventDates(event.start, event.end)}
-                </p>
-
-                <br />
-
-                {/* --- Место и адрес -------------- */}
-
-                <p>
-                  <strong>Место проведения: </strong>
-                  {event.place.name}
-                </p>
-                <p>
-                  <strong>Адрес: </strong>
-                  {event.place.address}
-                </p>
-
-                <hr />
-
-                {/* --- Анкета -------------- */}
-
-                <p className="is-size-6 has-text-weight-bold has-text-grey">
-                  <span className="icon has-text-primary">
-                    <i className="fa fa-list-ol" />
-                  </span>{' '}
-                  {survey && (
-                    <Link
-                      className="has-text-link"
-                      to={`/public-event-survey/${survey.id}`}
-                    >
-                      {_.truncate(survey.name, { length: 32 })}
-                    </Link>
+          <>
+            <div className="columns">
+              <div className="column is-12">
+                <div className="card card-rounded">
+                  {banner && (
+                    <div className="card-image">
+                      <figure className="image is-3by1">
+                        <img alt="" src={banner} />
+                      </figure>
+                    </div>
                   )}
-                  {!survey && (
-                    <span className="has-text-grey-lighter">Без анкеты</span>
-                  )}
-                </p>
+                  <div className="card-content">
+                    {/* --- Название и описание -------------- */}
 
-                {/* --- Посетители -------------- */}
+                    <h3 className="title is-4 has-text-grey">{name}</h3>
+                    <VEDescriptionAsSubtitle descr={description} />
 
-                <p className="is-size-6 has-text-weight-bold has-text-grey">
-                  <span className="icon has-text-primary">
-                    <i className="fa fa-users" />
-                  </span>{' '}
-                  {visitorCount === 0 && (
-                    <span className="has-text-grey-lighter">
-                      Нет зарегистрированных посетителей
-                    </span>
-                  )}
-                  {visitorCount > 0 && (
-                    <Link
-                      className="has-text-link"
-                      to={`/public-event/${event.id}/visitors`}
-                    >
-                      {Pluralize.count(visitorCount, Words.Visitors)}
-                    </Link>
-                  )}
-                </p>
+                    {/* --- Даты -------------- */}
+
+                    <p className="is-size-5 has-text-weight-bold has-text-grey">
+                      <span className="icon has-text-primary">
+                        <i className="fa fa-calendar" />
+                      </span>{' '}
+                      {formatEventDates(start, end)}
+                    </p>
+
+                    <br />
+
+                    {/* --- Место и адрес -------------- */}
+
+                    <p>
+                      <strong>Место проведения: </strong>
+                      {place.name}
+                    </p>
+                    <p>
+                      <strong>Адрес: </strong>
+                      {place.address}
+                    </p>
+
+                    <hr />
+
+                    {/* --- Анкета -------------- */}
+
+                    <p className="is-size-6 has-text-weight-bold has-text-grey">
+                      <span className="icon has-text-primary">
+                        <i className="fa fa-list-ol" />
+                      </span>{' '}
+                      {survey && (
+                        <Link
+                          className="has-text-link"
+                          to={`/public-event-survey/${survey.id}`}
+                        >
+                          {_.truncate(survey.name, { length: 32 })}
+                        </Link>
+                      )}
+                      {!survey && (
+                        <span className="has-text-grey-lighter">
+                          Без анкеты
+                        </span>
+                      )}
+                    </p>
+
+                    {/* --- Посетители -------------- */}
+
+                    <p className="is-size-6 has-text-weight-bold has-text-grey">
+                      <span className="icon has-text-primary">
+                        <i className="fa fa-users" />
+                      </span>{' '}
+                      {visitorCount === 0 && (
+                        <span className="has-text-grey-lighter">
+                          Нет зарегистрированных посетителей
+                        </span>
+                      )}
+                      {visitorCount > 0 && (
+                        <Link
+                          className="has-text-link"
+                          to={`/public-event/${event.id}/visitors`}
+                        >
+                          {Pluralize.count(visitorCount, Words.Visitors)}
+                        </Link>
+                      )}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     );

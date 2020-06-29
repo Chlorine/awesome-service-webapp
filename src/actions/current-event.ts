@@ -9,9 +9,17 @@ export type EventInfoLoaded = {
 
 export type EventInfoReset = {
   type: '@currentEvent/eventInfoReset';
-}
+};
 
-export type ActionType = EventInfoLoaded | EventInfoReset;
+export type EventMediaChanged = {
+  type: '@currentEvent/eventMediaChanged';
+  media: {
+    banner?: string;
+    logo?: string;
+  };
+};
+
+export type ActionType = EventInfoLoaded | EventInfoReset | EventMediaChanged;
 
 export const Actions = {
   eventInfoLoaded: (event: PublicEventInfo) => {
@@ -28,5 +36,13 @@ export const Actions = {
         type: '@currentEvent/eventInfoReset',
       });
     };
-  }
+  },
+  eventMediaChanged: (media: { banner?: string; logo?: string }) => {
+    return (dispatch: Dispatch<ActionType>) => {
+      dispatch({
+        type: '@currentEvent/eventMediaChanged',
+        media,
+      });
+    };
+  },
 };

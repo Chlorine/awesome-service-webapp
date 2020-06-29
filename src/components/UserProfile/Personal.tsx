@@ -3,7 +3,6 @@ import * as yup from 'yup';
 import { Formik, FormikProps, FormikHelpers } from 'formik';
 import { format, getDaysInMonth, parse, startOfDay } from 'date-fns';
 import { bindActionCreators, Dispatch } from 'redux';
-import loadImage from 'blueimp-load-image';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 
@@ -27,6 +26,7 @@ import { VEPageSecondaryTitle } from '../Common/ViewElements';
 import ImageCropper from '../Common/ImageCropper';
 import { RootState } from '../../store';
 import { Actions as AuthActions } from '../../actions/auth';
+import { loadImageFromFile } from '../../utils/image-utils';
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -50,7 +50,9 @@ declare type State = {
   somethingChanged: boolean;
 
   avatarSrc: string;
+  newImageIsPng: boolean;
   loadAvatarErrorMsg: string;
+  isAvatarPng: boolean;
   cropModalVisible: boolean;
   cropSrc: string | null;
   croppedBlob: Blob | null;
@@ -91,7 +93,9 @@ class Personal extends React.Component<Props, State> {
     somethingChanged: false,
 
     avatarSrc: '',
+    newImageIsPng: false,
     loadAvatarErrorMsg: '',
+    isAvatarPng: false,
     cropModalVisible: false,
     cropSrc: null,
     croppedBlob: null,
@@ -174,6 +178,13 @@ class Personal extends React.Component<Props, State> {
     }
   }
 
+  private get fileToUpload(): Blob {
+    const { croppedBlob, newImageIsPng } = this.state;
+    const ext = newImageIsPng ? 'png' : 'jpg';
+
+    return new File([croppedBlob!], `user-avatar.${ext}`);
+  }
+
   onSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
     values = this.schema.cast(values) as FormValues;
 
@@ -215,7 +226,7 @@ class Personal extends React.Component<Props, State> {
             try {
               const uploadRes = await api.upload(
                 { type: 'user-avatar', objectId: userInfo.id },
-                new File([croppedBlob], 'avatar.jpg'),
+                this.fileToUpload,
               );
 
               avatarUrl = uploadRes.publicUrl || null;
@@ -259,35 +270,6 @@ class Personal extends React.Component<Props, State> {
           );
         }
       });
-
-    // this.uh
-    //   .wrap(
-    //     api.users.exec('updateProfile', {
-    //       ...params,
-    //       __delay: 100,
-    //       __genErr: false,
-    //     }),
-    //   )
-    //   .then(({ err, results }) => {
-    //     actions.setSubmitting(false);
-    //
-    //     if (err) {
-    //       this.setState({ submitErrorMsg: err.message });
-    //     } else {
-    //       const { userInfo } = results;
-    //
-    //       this.setState({
-    //         userInfo,
-    //         submitOkMsgVisible: true,
-    //         somethingChanged: false,
-    //       });
-    //
-    //       this.uh.setTimeout(
-    //         () => this.setState({ submitOkMsgVisible: false }),
-    //         2000,
-    //       );
-    //     }
-    //   });
   };
 
   onFormValueChange = () => {
@@ -586,9 +568,8 @@ class Personal extends React.Component<Props, State> {
               )}
               {avatarSrc && (
                 <div
-                  style={{ maxWidth: 200, maxHeight: 200 }}
                   data-tooltip="Выбрать картинку"
-                  className="has-tooltip-bottom has-tooltip-arrow"
+                  className="has-tooltip-bottom has-tooltip-arrow avatar-preview-outer"
                 >
                   <figure className="image is-square mb-4">
                     <img
@@ -597,6 +578,7 @@ class Personal extends React.Component<Props, State> {
                       src={this.state.avatarSrc}
                       alt=""
                       onClick={() =>
+                        !isSubmitting &&
                         this.fileInputRef.current &&
                         this.fileInputRef.current.click()
                       }
@@ -705,24 +687,15 @@ class Personal extends React.Component<Props, State> {
     if (files && files.length > 0) {
       this.setState({ loadAvatarErrorMsg: '' });
 
-      // https://github.com/blueimp/JavaScript-Load-Image/#image-loading
-
-      loadImage(
-        files[0],
-        maybeImg => {
-          if ('type' in maybeImg && maybeImg.type === 'error') {
-            this.setState({
-              loadAvatarErrorMsg: `Ошибка загрузки изображения из файла`,
-            });
-          } else {
-            this.setState({
-              cropSrc: (maybeImg as HTMLCanvasElement).toDataURL('image/jpeg'),
-              cropModalVisible: true,
-            });
-          }
-        },
-        { orientation: true, canvas: true },
-      );
+      loadImageFromFile(files[0])
+        .then(({ isPng, dataURL }) =>
+          this.setState({
+            newImageIsPng: isPng,
+            cropSrc: dataURL,
+            cropModalVisible: true,
+          }),
+        )
+        .catch(err => this.setState({ loadAvatarErrorMsg: err.message }));
     }
   };
 
@@ -776,6 +749,8 @@ class Personal extends React.Component<Props, State> {
       fetchErrorMsg,
       userInfo,
       cropModalVisible,
+      cropSrc,
+      newImageIsPng,
     } = this.state;
 
     return (
@@ -783,10 +758,11 @@ class Personal extends React.Component<Props, State> {
         <ImageCropper
           aspect={1}
           circular={true}
-          src={this.state.cropSrc}
+          src={cropSrc}
           visible={cropModalVisible}
           handleCancel={() => this.setState({ cropModalVisible: false })}
           handleOk={this.handleCropResult}
+          png={newImageIsPng}
         />
         <div className="container">
           {isFetching && (

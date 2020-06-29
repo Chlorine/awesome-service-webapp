@@ -16,6 +16,19 @@ export const currentEventReducer = produce(
       case '@currentEvent/eventInfoReset':
         draft.event = null;
         break;
+      case '@currentEvent/eventMediaChanged':
+        {
+          const { banner, logo } = action.media;
+          if (draft.event) {
+            if (banner) {
+              draft.event.banner = banner;
+            }
+            if (logo) {
+              draft.event.logo = logo;
+            }
+          }
+        }
+        break;
     }
 
     return draft;

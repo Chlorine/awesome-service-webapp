@@ -19,6 +19,7 @@ import {
 } from '../../Common/ViewElements';
 
 import EventEdit from './EventEdit';
+import EventImage from './EventImage';
 import EventFastTrack from './EventFastTrack';
 import EventWidget from './EventWidget';
 import EventVisitors from './EventVisitors';
@@ -99,8 +100,16 @@ class Event extends React.Component<Props, State> {
           linkTo: '/info',
         },
         {
-          title: 'Изменить параметры',
+          title: 'Параметры',
           linkTo: '/edit',
+        },
+        {
+          title: 'Баннер',
+          linkTo: '/banner',
+        },
+        {
+          title: 'Логотип',
+          linkTo: '/logo',
         },
         {
           title: 'Fast-track',
@@ -119,6 +128,8 @@ class Event extends React.Component<Props, State> {
   ];
 
   renderSwitch(basePath: string) {
+    // noinspection PointlessArithmeticExpressionJS
+
     return (
       <Switch>
         <Route
@@ -128,6 +139,32 @@ class Event extends React.Component<Props, State> {
         />
         <Route path={`${basePath}/info`} component={EventInfo} />
         <Route path={`${basePath}/edit`} component={EventEdit} />
+        <Route
+          path={`${basePath}/banner`}
+          render={props => (
+            <EventImage
+              key={1}
+              title="Баннер мероприятия"
+              subtitle="Широкая картинка для карточки мероприятия"
+              objectType="public-event-banner"
+              cropAspectRatio={3 / 1}
+              {...props}
+            />
+          )}
+        />
+        <Route
+          path={`${basePath}/logo`}
+          render={props => (
+            <EventImage
+              key={2}
+              title="Логотип мероприятия"
+              subtitle="Маленькая картинка для различного рода списков"
+              objectType="public-event-logo"
+              cropAspectRatio={1 / 1}
+              {...props}
+            />
+          )}
+        />
         <Route path={`${basePath}/fast-track`} component={EventFastTrack} />
         <Route path={`${basePath}/widget`} component={EventWidget} />
         <Route path={`${basePath}/visitors`} component={EventVisitors} />

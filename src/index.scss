@@ -97,3 +97,22 @@ $loader-color: $grey-lightest;
 .avatar-with-shadow {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
+
+.card-rounded {
+  border-radius: $box-radius;
+
+  img {
+    border-top-left-radius: $box-radius;
+    border-top-right-radius: $box-radius;
+  }
+}
+
+.event-logo-preview-outer {
+  max-width: 150px;
+  max-height: 150px;
+}
+
+.avatar-preview-outer {
+  max-width: 200px;
+  max-height: 200px;
+}

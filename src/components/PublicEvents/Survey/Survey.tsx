@@ -102,7 +102,7 @@ class Survey extends React.Component<Props, State> {
           linkTo: '/new-question',
         },
         {
-          title: 'Изменить параметры',
+          title: 'Параметры',
           linkTo: '/edit',
         },
       ],

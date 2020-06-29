@@ -9,6 +9,7 @@ export type Props = {
   handleOk: (blob: Blob) => void;
   aspect: number;
   circular?: boolean;
+  png?: boolean;
 };
 
 declare type State = {
@@ -179,6 +180,11 @@ export default class ImageCropper extends React.Component<Props, State> {
       height * scaleY,
     );
 
+    let type = 'image/jpeg';
+    if (this.props.png) {
+      type = 'image/png';
+    }
+
     return new Promise((resolve, reject) => {
       canvas.toBlob(
         blob => {
@@ -188,8 +194,8 @@ export default class ImageCropper extends React.Component<Props, State> {
           }
           resolve(blob);
         },
-        'image/jpeg',
-        0.7,
+        type,
+        0.88,
       );
     });
   }
