@@ -42,16 +42,29 @@ class Home extends React.Component<Props, State> {
             </div>
           </div>
         </section>
-        <div className="box home-cta">
-          <p className="has-text-centered">
-            <span className="tag is-warning">
-              <strong>Внимание!</strong>
-            </span>{' '}
-            Регистрация пользователей{' '}
-            <Link className="has-text-link" to={'/signup'}>
-              открыта
-            </Link>
-          </p>
+        <div className="box py-2 home-cta">
+          <div className="flex-row-centered" style={{ alignItems: 'start' }}>
+            <div className="mr-3 mt-1">
+              <span className="tag is-warning">
+                <strong>Внимание!</strong>
+              </span>
+            </div>
+            <div>
+              <p>
+                Регистрация пользователей{' '}
+                <Link className="has-text-link" to={'/signup'}>
+                  открыта
+                </Link>
+                !
+                <br />
+                Или можно{' '}
+                <Link className="has-text-link" to={'/login'}>
+                  просто посмотреть
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
         </div>
         <div className="home-intro column is-8 is-offset-2">
           <h2 className="title">
