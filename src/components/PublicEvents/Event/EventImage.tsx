@@ -14,6 +14,8 @@ import { RootState } from '../../../store';
 import { UploadParamsBase } from '../../../back/common';
 import ImageCropper from '../../Common/ImageCropper';
 import { loadImageFromFile } from '../../../utils/image-utils';
+import { ConfirmModal } from '../../Common/ConfirmModal';
+import { Params } from '../../../back/common/public-events/api';
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -50,6 +52,8 @@ declare type State = {
   cropModalVisible: boolean;
   cropSrc: string | null;
   croppedBlob: Blob | null;
+
+  removeConfirmModalVisible: boolean;
 };
 
 class EventImage extends React.Component<Props, State> {
@@ -71,6 +75,8 @@ class EventImage extends React.Component<Props, State> {
     cropModalVisible: false,
     cropSrc: null,
     croppedBlob: null,
+
+    removeConfirmModalVisible: false,
   };
 
   componentDidMount(): void {
@@ -189,6 +195,60 @@ class EventImage extends React.Component<Props, State> {
     });
   };
 
+  onBtnRemoveImage = () => {
+    //
+  };
+
+  get eventPictureExists(): boolean {
+    const { objectType } = this.props;
+    const { logo, banner } = this.props.currentEvent.event!;
+
+    return (
+      (objectType === 'public-event-logo' && !!logo) ||
+      (objectType === 'public-event-banner' && !!banner)
+    );
+  }
+
+  handleRemoveConfirmModalClose = (confirmed?: boolean) => {
+    this.setState({ removeConfirmModalVisible: false }, () => {
+      if (confirmed) {
+        let mediaType: Params<'removeEventMedia'>['mediaType'] = 'banner';
+
+        switch (this.props.objectType) {
+          case 'public-event-logo':
+            mediaType = 'logo';
+            break;
+          case 'public-event-banner':
+            mediaType = 'banner';
+            break;
+        }
+
+        this.setState({ isSubmitting: true, submitErrorMsg: '' });
+        this.uh
+          .wrap(
+            api.events.exec('removeEventMedia', {
+              eventId: this.props.currentEvent.event!.id,
+              mediaType,
+              __delay: 333,
+              __genErr: false,
+            }),
+          )
+          .then(({ err, results }) => {
+            this.setState({ isSubmitting: false });
+            if (err) {
+              this.setState({
+                submitErrorMsg: `Ошибка удаления картинки: ${err.message}`,
+              });
+            } else {
+              const { event } = results;
+              this.props.currentEventActions.eventInfoLoaded(event);
+              this.setState({ imageSrc: this.defaultImageSrc });
+            }
+          });
+      }
+    });
+  };
+
   render() {
     const {
       isSubmitting,
@@ -200,14 +260,23 @@ class EventImage extends React.Component<Props, State> {
       somethingChanged,
       submitOkMsgVisible,
       newImageIsPng,
+      removeConfirmModalVisible,
     } = this.state;
 
     const { title, subtitle, cropAspectRatio, objectType } = this.props;
     const isLogo = objectType === 'public-event-logo';
+    const showRemoveButton = this.eventPictureExists && !this.state.croppedBlob;
 
-    // noinspection PointlessArithmeticExpressionJS
     return (
       <>
+        <ConfirmModal
+          visible={removeConfirmModalVisible}
+          handleClose={this.handleRemoveConfirmModalClose}
+          okBtnClass={'is-danger'}
+          okBtnText="Удалить"
+        >
+          Удалить картинку мероприятия?
+        </ConfirmModal>
         <ImageCropper
           aspect={cropAspectRatio}
           circular={false}
@@ -281,28 +350,46 @@ class EventImage extends React.Component<Props, State> {
                     </div>
                   )}
 
-                  {/* --- Файл-инпут ---------------------  */}
+                  {/* --- Файл-инпут (и удаляшка) ---------------------  */}
 
-                  <div className="file mt-4">
-                    <label className="file-label">
-                      <input
-                        ref={this.fileInputRef}
-                        className="file-input"
-                        type="file"
-                        name="avatar"
-                        accept="image/*"
-                        value="" // для onChange при выборе того же файла
-                        onChange={this.onFileInputChange}
-                        disabled={isSubmitting}
-                        multiple={false}
-                      />
-                      <span className="file-cta">
-                        <span className="file-icon">
-                          <i className="fa fa-upload" />
+                  <div className="flex-row-left">
+                    <div className="file mt-4">
+                      <label className="file-label">
+                        <input
+                          ref={this.fileInputRef}
+                          className="file-input"
+                          type="file"
+                          name="avatar"
+                          accept="image/*"
+                          value="" // для onChange при выборе того же файла
+                          onChange={this.onFileInputChange}
+                          disabled={isSubmitting}
+                          multiple={false}
+                        />
+                        <span className="file-cta">
+                          <span className="file-icon">
+                            <i className="fa fa-upload" />
+                          </span>
+                          <span className="file-label">Выбрать...</span>
                         </span>
-                        <span className="file-label">Выбрать...</span>
-                      </span>
-                    </label>
+                      </label>
+                    </div>
+                    {showRemoveButton && (
+                      <div className="ml-3 mt-4">
+                        <button
+                          className={classNames('button is-warning', {
+                            'is-loading': isSubmitting,
+                          })}
+                          type="button"
+                          onClick={() =>
+                            this.setState({ removeConfirmModalVisible: true })
+                          }
+                          disabled={isSubmitting}
+                        >
+                          Удалить...
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* --- Ошибка сохранения ----------------------------------------*/}

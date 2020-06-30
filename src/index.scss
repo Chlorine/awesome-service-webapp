@@ -20,6 +20,9 @@ $pagination-current-background-color: $nice-active;
 $pagination-current-border-color: $nice-active;
 $hero-body-padding: 1.75rem 1.5rem !default
 
+$modal-card-head-padding: 15px 20px;
+$modal-card-title-size: 1rem;
+
 @import '~bulma/bulma.sass';
 
 $tooltip-padding: .25rem .5rem !default

@@ -19,6 +19,8 @@ import {
 } from '../Common/Pagination';
 import { Alert } from '../Common/Alert';
 
+import DEFAULT_EVENT_LOGO from './../../images/public-event-02.svg';
+
 declare type Props = {
   isArchive: boolean;
 };
@@ -151,13 +153,23 @@ export default class Events extends React.Component<Props, State> {
 }
 
 const EventCard: React.FC<{ event: PublicEventInfo }> = ({ event }) => {
+  const { logo } = event;
+
   return (
     <div className="box">
       <div className="media">
         <div className="media-left">
-          <span className="icon is-large">
-            <i className="fa fa-2x fa-star-o has-text-grey-light" />
-          </span>
+          {logo && (
+            <figure className="image is-64x64">
+              <img src={logo} alt="" />
+            </figure>
+          )}
+          {!logo && (
+            <figure className="image is-64x64">
+              {/*<i className="fa fa-4x fa-star-o has-text-grey-light" />*/}
+              <img src={DEFAULT_EVENT_LOGO} alt="" />
+            </figure>
+          )}
         </div>
         <div className="media-content zero-min-width">
           <VEPageSecondaryTitle

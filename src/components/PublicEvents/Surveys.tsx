@@ -19,6 +19,8 @@ import {
 } from '../Common/Pagination';
 import { Alert } from '../Common/Alert';
 
+import DEFAULT_SURVEY_LOGO from './../../images/public-event-survey-02.svg';
+
 declare type Props = {};
 
 declare type State = {
@@ -136,9 +138,9 @@ const SurveyCard: React.FC<{ survey: SurveyInfo }> = ({ survey }) => {
     <div className="box">
       <div className="media">
         <div className="media-left">
-          <span className="icon is-large">
-            <i className="fa fa-2x fa-list-ol has-text-grey-light" />
-          </span>
+          <figure className="image is-48x48">
+            <img src={DEFAULT_SURVEY_LOGO} alt="" />
+          </figure>
         </div>
         <div className="media-content zero-min-width">
           <VEPageSecondaryTitle
